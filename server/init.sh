@@ -7,11 +7,9 @@ else
 	mkdir ~/powerplant_transmission
 fi
 
-#file="~/powerplant_transmission/temp_and_humidity"
 if [ -p ~/powerplant_transmission/temp_and_humidity ]; then
 	echo "Pipe exists: temp_and_humidity"
 else
 	echo "Creating missing named pipe: temp_and_humidity"
-	# mkfifo $file
 	mkfifo ~/powerplant_transmission/temp_and_humidity
 fi
