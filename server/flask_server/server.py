@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
 import time
+import json
 
 app = Flask(__name__)
 
@@ -39,8 +40,6 @@ def cpu_temp():
 def persist_temp_and_humid(): 
   data = request.form
 
-  print(data.get("data"))
-
   pieces = data.get("data").split("|")
   unix_timestamp = pieces[0]
   humidity_string = pieces[1]
@@ -62,6 +61,6 @@ def persist_temp_and_humid():
  
   write_to_file("temp_humidity_", the_real_string) 
 
-  print(dict_of_data)
+  print(json.dumps(dict_of_data, indent=4))
     
   return jsonify(isError=False, message="Success", statusCode=200), 200
