@@ -1,5 +1,4 @@
 #include <Adafruit_Sensor.h>
-#include <string>
 #include <stdint.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -21,7 +20,7 @@ void setup() {
 
 class SyncTimerTask {
   
-}
+};
 
 class TempHumidityTask {
   long ReadEveryMillis;
@@ -33,10 +32,17 @@ class TempHumidityTask {
     LastReadMillis = millis();
   }
 
-  std::string readSensor() {
+  String readSensor() {
+    String debugPrinter = String(LastReadMillis);
+    debugPrinter.concat("|");
+    debugPrinter.concat(String(millis()));
+    Serial.print(debugPrinter);
+    
     if (!shouldRunTask()) {
       return "";
     }
+
+    LastReadMillis = millis();
 
     // Reading temperature or humidity takes about 250 milliseconds!
     // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
@@ -47,38 +53,57 @@ class TempHumidityTask {
 
     // Check if any reads failed and exit early (to try again).
     if (isnan(h) || isnan(f)) {
-      Serial.println;
-      return "Failed to read from DHT sensor!";
+      return "&err|Failed to read temp-humid sensor.";
     }
 
     // Compute heat index in Fahrenheit (the default)
     float hif = dht.computeHeatIndex(f, h);
 
-    std::string str = "&th|humidity:";
-    str.append(h);
-    str.append("|");
-    str.append("temp-fht:");
-    str.append(f);
-    str.append("|");
-    str.append("heat-index-fht:");
-    str.append(hif);
-    str.append('\n');
+    String str = "&th|humidity:";
+    str.concat(h);
+    str.concat("|");
+    str.concat("temp-fht:");
+    str.concat(f);
+    str.concat("|");
+    str.concat("heat-index-fht:");
+    str.concat(hif);
+    str.concat('\n');
 
     return str;
-  }
+  } 
   
   bool shouldRunTask() {
     return millis() >= (LastReadMillis + ReadEveryMillis);
   }
 
-}
+};
 
-TempHumidityTask tempHumidity(60000);
+class SerialWriter {
+
+  public:
+  SerialWriter() {}
+
+  bool writeString(String string) {
+    // No need to write nothing - this is going to be treated as success.
+    if (string.equals("")) {
+      return true;
+    }
+    
+    int bytesWritten = Serial.print(string); 
+
+    return bytesWritten > 0;
+  }
+};
+
+SerialWriter serialWriter();
+TempHumidityTask tempHumidity(5000);
 
 void loop() {
-  std::string tmpHumidReading = tempHumidity.read();
+  delay(1000);
+  Serial.println("hello");
+  //String tmpHumidReading = tempHumidity.readSensor();
 
-  if (tmpHumidReading != "") {
-    Serial.print(tmpHumidReading);
-  }
+  //if (tmpHumidReading != "") {
+  //  Serial.print(tmpHumidReading);
+  //}
 }
