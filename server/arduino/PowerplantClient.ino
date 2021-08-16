@@ -2,37 +2,24 @@
 #include <stdint.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <stdlib.h>
 
 #include <Adafruit_Sensor.h>
 
 
 #define DHTPIN 2     // what digital pin we're connected to
-  
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
-
-/**
-This is a test.
-*/
 
 DHT dht(DHTPIN, DHTTYPE);
 
-void setup() {
-  Serial.begin(9600);
 
-  dht.begin();
-}
-
-class SyncTimerTask {
-  
-};
-
-class TimeKeeper {
+class OneShotScheduler {
   private:
     long readEveryMillis;
     long lastReadMillis;
   
   public:
-    TimeKeeper(long everyMillis) {
+    OneShotScheduler(long everyMillis) {
         this->readEveryMillis = everyMillis;
         this->lastReadMillis = millis();
     }
@@ -48,15 +35,15 @@ class TimeKeeper {
 
 class TempHumidityTask {
   private:
-    TimeKeeper *tk;
+    OneShotScheduler *scheduler;
 
   public:
-    TempHumidityTask(TimeKeeper *tk) {
-      this->tk = tk;
+    TempHumidityTask(OneShotScheduler *scheduler) {
+      this->scheduler = scheduler;
     }
   
     String readSensor() {    
-      if (!this->tk->shouldRunTask()) {
+      if (!this->scheduler->shouldRunTask()) {
         return "";
       }
     
@@ -75,7 +62,7 @@ class TempHumidityTask {
       // Compute heat index in Fahrenheit (the default)
       float hif = dht.computeHeatIndex(f, h);
 
-      this->tk->markTaskAsRun();
+      this->scheduler->markTaskAsRun();
   
       String str = "&th|humidity:";
       str.concat(h);
@@ -93,25 +80,114 @@ class TempHumidityTask {
 class SerialWriter {
 
   public:
-  SerialWriter() {}
+    SerialWriter() {}
 
-  bool writeString(String string) {
-    // No need to write nothing - this is going to be treated as success.
-    if (string.equals("")) {
-      return true;
-    }
+    bool writeString(String string) {
+      // No need to write nothing - this is going to be treated as success.
+      if (string.equals("")) {
+        return true;
+      }
     
-    int bytesWritten = Serial.println(string); 
+      int bytesWritten = Serial.println(string); 
 
-    return bytesWritten > 0;
-  }
+      return bytesWritten > 0;
+    }
 };
 
+class TimeCoordinator {
+  private:
+    long realWorldStartTime;
+    long arduinoStartTime;
+    bool realWorldTimeSynced;
+
+  public:
+    TimeCoordinator() {
+      this->arduinoStartTime = millis();
+      this->realWorldStartTime = 0;
+      this->realWorldTimeSynced = false;;
+    }
+
+    void coordinateRealWorldTime() {
+      String timeString;
+      Serial.println("time-please");
+      while (true) {
+        if (Serial.available()) {
+          timeString = Serial.readStringUntil('>');
+          break;
+        } else {
+          delay(1000);
+        }
+      }
+
+      this->realWorldStartTime = timeString.toInt();
+    }
+
+    long getCurrentTimeStamp() {
+      return (millis() - this->arduinoStartTime) + this->realWorldStartTime;
+    }
+};
+
+class Logger {
+  private:
+     SerialWriter *sw;
+  
+  public:
+    Logger(SerialWriter *sw) {
+      this->sw = sw;
+    }
+
+    void doLog(String aString) {
+      String prefix = "log|";
+      prefix.concat(aString);
+      sw->writeString(prefix);
+    }
+};
+
+class ValveOperator {
+  private:
+    TimeCoordinator *tc;
+    Logger *logr;
+    int secondsOpen;
+ 
+  public:
+    ValveOperator(Logger *logr, TimeCoordinator *tc, int secondsOpen) {
+      this->secondsOpen = secondsOpen;
+      this->logr = logr;
+      this->tc = tc;
+    }
+
+    void evaluateSchedule() {
+      return;
+    }
+};
+
+
 SerialWriter serialWriter;
-TimeKeeper tmpHumidTk(5000);
-TempHumidityTask tempHumidity(&tmpHumidTk);
+Logger logr(&serialWriter);
+TimeCoordinator timeKeeper;
+OneShotScheduler tempHumidScheduler(5000);
+TempHumidityTask tempHumidity(&tempHumidScheduler);
+ValveOperator mainWaterValve(&logr, &timeKeeper, 20);
+
+void setup() {
+  Serial.begin(9600);
+
+  // Start(?) the temp/humdity chip
+  dht.begin();
+
+  // Solicit the real world time in order to schedule water delivery properly.
+  timeKeeper.coordinateRealWorldTime();
+}
 
 void loop() {
-  delay(1000);
-  serialWriter.writeString(tempHumidity.readSensor());
+  delay(5000);
+
+  serialWriter.writeString("hello!");
+
+  long currentTimestamp = timeKeeper.getCurrentTimeStamp();
+  String currentTsString = String(currentTimestamp);
+  logr.doLog(currentTsString);
+
+//  serialWriter.writeString(tempHumidity.readSensor());
+//  mainWaterValve.evaluateSchedule();
 }
