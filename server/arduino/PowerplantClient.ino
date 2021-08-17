@@ -136,7 +136,7 @@ class TimeCoordinator {
      * Get the integer of the hour that it is.
      */
     int getCurrentHourOffset() {
-      int daySeconds = this.getCurrentTimestamp() % 86400;
+      int daySeconds = this->getCurrentTimeStamp() % 86400;
 
       // Integer division should floor this to whateve the hour is, I think.
       return daySeconds / 3600;
@@ -146,14 +146,14 @@ class TimeCoordinator {
      * Get current day offset from epoch
      */
     int getDayOffset() {
-      return this.getCurrentTimestamp() / 86400;
+      return this->getCurrentTimeStamp() / 86400;
     }
 };
 
 class Logger {
   private:
      SerialWriter *sw;
-     TimeCoordinator tc;
+     TimeCoordinator *tc;
   
   public:
     Logger(SerialWriter *sw, TimeCoordinator *tc) {
@@ -162,8 +162,8 @@ class Logger {
     }
 
     void doLog(String aString) {
-      String prefix = "log|"
-      prefix.concat(this->tc->getCurrentTimestamp());
+      String prefix = "log|";
+      prefix.concat(this->tc->getCurrentTimeStamp());
       prefix.concat("|");
       prefix.concat(aString);
       sw->writeString(prefix);
@@ -197,9 +197,9 @@ class ValveOperator {
       this->scheduler->markTaskAsRun();
 
       if (this->valveOpen) {
-        if (this->tc->getCurrrentTimeOffset() > (this->valveOpenedAtTimestamp + this->secondsOpen)) {
+        if (this->tc->getCurrentTimeStamp() > (this->valveOpenedAtTimestamp + this->secondsOpen)) {
           this->lastDayOffsetRun = this->tc->getDayOffset();
-          this.closeValve();
+          this->closeValve();
         } else {
           // The valve is open and doesnt need to be closed yet.  We can evaluate again soon.
           return;
@@ -208,14 +208,14 @@ class ValveOperator {
 
       // Do the 8am check
       if (this->tc->getDayOffset() != this->lastDayOffsetRun && this->tc->getCurrentHourOffset() == 8) {
-        this.openValve();
+        this->openValve();
       }
     }
 
     void openValve() {
       // GIVE POWER TO PIN
       this->valveOpen = true;
-      this->valveOpenedAtTimestamp = this->tc->getCurrentTimestamp();
+      this->valveOpenedAtTimestamp = this->tc->getCurrentTimeStamp();
     }
 
     void closeValve() {
