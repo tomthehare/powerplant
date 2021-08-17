@@ -107,6 +107,9 @@ class TimeCoordinator {
       this->realWorldTimeSynced = false;;
     }
 
+    /**
+     * Mzking the assumption that we are getting the unix time stamp which is offset for EST already.
+     */
     void coordinateRealWorldTime() {
       String timeString;
       Serial.println("time-please");
@@ -122,22 +125,46 @@ class TimeCoordinator {
       this->realWorldStartTime = timeString.toInt();
     }
 
+    /**
+     * Get Current timestamp - note it's already in EST (or we are assuming that)
+     */
     long getCurrentTimeStamp() {
       return (millis() - this->arduinoStartTime) + this->realWorldStartTime;
+    }
+
+    /**
+     * Get the integer of the hour that it is.
+     */
+    int getCurrentHourOffset() {
+      int daySeconds = this.getCurrentTimestamp() % 86400;
+
+      // Integer division should floor this to whateve the hour is, I think.
+      return daySeconds / 3600;
+    }
+
+    /**
+     * Get current day offset from epoch
+     */
+    int getDayOffset() {
+      return this.getCurrentTimestamp() / 86400;
     }
 };
 
 class Logger {
   private:
      SerialWriter *sw;
+     TimeCoordinator tc;
   
   public:
-    Logger(SerialWriter *sw) {
+    Logger(SerialWriter *sw, TimeCoordinator *tc) {
       this->sw = sw;
+      this->tc = tc;
     }
 
     void doLog(String aString) {
-      String prefix = "log|";
+      String prefix = "log|"
+      prefix.concat(this->tc->getCurrentTimestamp());
+      prefix.concat("|");
       prefix.concat(aString);
       sw->writeString(prefix);
     }
@@ -148,26 +175,64 @@ class ValveOperator {
     TimeCoordinator *tc;
     Logger *logr;
     int secondsOpen;
+    OneShotScheduler *scheduler;
+    int lastDayOffsetRun;
+    long valveOpenedAtTimestamp;
+    bool valveOpen;
  
   public:
-    ValveOperator(Logger *logr, TimeCoordinator *tc, int secondsOpen) {
+    ValveOperator(Logger *logr, TimeCoordinator *tc, int secondsOpen, OneShotScheduler *scheduler) {
       this->secondsOpen = secondsOpen;
       this->logr = logr;
       this->tc = tc;
+      this->scheduler = scheduler;
+      this->lastDayOffsetRun = 0;
     }
 
     void evaluateSchedule() {
-      return;
+      if (!this->scheduler->shouldRunTask()) {
+        return;
+      }
+
+      this->scheduler->markTaskAsRun();
+
+      if (this->valveOpen) {
+        if (this->tc->getCurrrentTimeOffset() > (this->valveOpenedAtTimestamp + this->secondsOpen)) {
+          this->lastDayOffsetRun = this->tc->getDayOffset();
+          this.closeValve();
+        } else {
+          // The valve is open and doesnt need to be closed yet.  We can evaluate again soon.
+          return;
+        }
+      }
+
+      // Do the 8am check
+      if (this->tc->getDayOffset() != this->lastDayOffsetRun && this->tc->getCurrentHourOffset() == 8) {
+        this.openValve();
+      }
+    }
+
+    void openValve() {
+      // GIVE POWER TO PIN
+      this->valveOpen = true;
+      this->valveOpenedAtTimestamp = this->tc->getCurrentTimestamp();
+    }
+
+    void closeValve() {
+      // TAKE POWER AWAY
+      this->valveOpen = false;
+      this->valveOpenedAtTimestamp = 0;
     }
 };
 
 
 SerialWriter serialWriter;
-Logger logr(&serialWriter);
 TimeCoordinator timeKeeper;
+Logger logr(&serialWriter, &timeKeeper);
 OneShotScheduler tempHumidScheduler(5000);
 TempHumidityTask tempHumidity(&tempHumidScheduler);
-ValveOperator mainWaterValve(&logr, &timeKeeper, 20);
+OneShotScheduler mainWaterValveScheduler(5000);
+ValveOperator mainWaterValve(&logr, &timeKeeper, 20, &mainWaterValveScheduler);
 
 void setup() {
   Serial.begin(9600);
@@ -182,11 +247,7 @@ void setup() {
 void loop() {
   delay(5000);
 
-  serialWriter.writeString("hello!");
-
-  long currentTimestamp = timeKeeper.getCurrentTimeStamp();
-  String currentTsString = String(currentTimestamp);
-  logr.doLog(currentTsString);
+  logr.doLog("checking in");
 
 //  serialWriter.writeString(tempHumidity.readSensor());
 //  mainWaterValve.evaluateSchedule();
