@@ -13,6 +13,7 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 #define PIN_WATERVALVE 7
+#define VALVE_COOLDOWN_SECONDS 60
 
 class OneShotScheduler {
   private:
@@ -233,17 +234,20 @@ class ValveOperator {
       int currentMinute = this->tc->getCurrentMinuteOffset();
 
       // Do the 8am check
-//      if (currentDay != this->lastDayOffsetRun && this->tc->getCurrentHourOffset() == 10) {
+//      if (currentDay != this->lastDayOffsetRun && this->tc->getCurrentHourOffset() == 8) {
 //        this->openValve();
 //      }
 
-        // for testing!
-        if (currentMinute % 2 == 0 && this->lastMinuteOffsetRun != this->tc->getCurrentMinuteOffset()) {
-          this->openValve();
-        }
+        // TESTING
+        this->openValve();
     }
 
     void openValve() {
+      if (this->tc->getCurrentTimeStamp() <= this->valveCoolDownTimestamp) {
+        this->logr->doLog("Attempted to open a valve prior to cooldown completed.");            
+        return;
+      }
+      
       digitalWrite(PIN_WATERVALVE, HIGH);
       this->valveOpen = true;
       this->valveOpenedAtTimestamp = this->tc->getCurrentTimeStamp();
@@ -264,7 +268,7 @@ class ValveOperator {
     }
 
     void setCoolDownTimestamp() {
-      this->valveCoolDownTimestamp = this->tc->getCurrentTimeStamp() + 10;
+      this->valveCoolDownTimestamp = this->tc->getCurrentTimeStamp() + VALVE_COOLDOWN_SECONDS;
     }
 };
 
@@ -274,7 +278,7 @@ TimeCoordinator timeKeeper;
 Logger logr(&serialWriter, &timeKeeper);
 OneShotScheduler tempHumidScheduler(60000); // Evaluate if it should run every 5 seconds
 TempHumidityTask tempHumidity(&tempHumidScheduler);
-OneShotScheduler mainWaterValveScheduler(5000); // evaluate if it should run every minute, this does not mean it will run, just that it will have a chance to evaluate.
+OneShotScheduler mainWaterValveScheduler(60000); // evaluate if it should run every minute, this does not mean it will run, just that it will have a chance to evaluate.
 ValveOperator mainWaterValve(&logr, &timeKeeper, 30, &mainWaterValveScheduler);
 
 void setup() {
