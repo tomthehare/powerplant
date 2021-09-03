@@ -20,12 +20,16 @@ while (True):
         print(file_payload)
         
         payload_parts = file_payload.split("|")
-        payload_identifier = payload_parts[1]
-
+        payload_identifier = payload_parts[0]
+        
         if payload_identifier == "&th":
             try:
-                print("sending request")
-                #r = requests.post('http://192.168.86.182:5000/temp-humid', data ={'data': file_payload})
-                #print(r.json())
+                print("sent request")
+                r = requests.post('http://192.168.86.182:5000/temp-humid', data ={'data': file_payload})
             except:
                 print('error pushing request to temp-humid endpoint')
+        elif payload_identifier == "&log":
+            try:
+                r = requests.post('http://192.168.86.182:5000/logging', data ={'data': file_payload})
+            except:
+                print('error pushing request to logging endpoint')

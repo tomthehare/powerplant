@@ -36,15 +36,28 @@ def cpu_temp():
     
   return jsonify(isError=False, message="Success", statusCode=200), 200
 
+@app.route('/logging', methods = ['POST'])
+def logging():
+  data = request.form
+ 
+  write_to_file("logging_", data.get("data")) 
+
+  print(data.get("data"))
+    
+  return jsonify(isError=False, message="Success", statusCode=200), 200
+
 @app.route('/temp-humid', methods = ['POST'])
 def persist_temp_and_humid(): 
   data = request.form
 
   pieces = data.get("data").split("|")
-  unix_timestamp = pieces[0]
-  humidity_string = pieces[1]
-  temp_string = pieces[2]
-  heat_index = pieces[3]
+  
+  print(str(pieces))
+  
+  unix_timestamp = pieces[1]
+  humidity_string = pieces[2]
+  temp_string = pieces[3]
+  heat_index = pieces[4]
 
   humidity_pieces = humidity_string.split(":")
   humidity_value = humidity_pieces[1]

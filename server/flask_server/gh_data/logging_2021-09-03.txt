@@ -1,0 +1,12 @@
+&log|1630675802|Closed valve
+&log|1630675802|Attempted to open a valve prior to cooldown completed.
+&log|1630675862|Attempted to open a valve prior to cooldown completed.
+&log|1630675922|Opened valve
+&log|1630676042|Closed valve
+&log|1630676042|Attempted to open a valve prior to cooldown completed.
+&log|1630676102|Attempted to open a valve prior to cooldown completed.
+&log|1630676162|Opened valve
+&log|1630676259|Arduino time synced: 1630676259
+&log|1630676318|Opened valve
+&log|1630676438|Closed valve
+&log|1630676438|Attempted to open a valve prior to cooldown completed.
