@@ -35,67 +35,6 @@ class OneShotScheduler {
     }
 };
 
-class TempHumidityTask {
-  private:
-    OneShotScheduler *scheduler;
-
-  public:
-    TempHumidityTask(OneShotScheduler *scheduler) {
-      this->scheduler = scheduler;
-    }
-  
-    String readSensor() {    
-      if (!this->scheduler->shouldRunTask()) {
-        return "";
-      }
-    
-      // Reading temperature or humidity takes about 250 milliseconds!
-      // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-      float h = dht.readHumidity();
-   
-      // Read temperature as Fahrenheit (isFahrenheit = true)
-      float f = dht.readTemperature(true);
-  
-      // Check if any reads failed and exit early (to try again).
-      if (isnan(h) || isnan(f)) {
-        return "&err|Failed to read temp-humid sensor.";
-      }
-  
-      // Compute heat index in Fahrenheit (the default)
-      float hif = dht.computeHeatIndex(f, h);
-
-      this->scheduler->markTaskAsRun();
-  
-      String str = "&th|humidity:";
-      str.concat(h);
-      str.concat("|");
-      str.concat("temp-fht:");
-      str.concat(f);
-      str.concat("|");
-      str.concat("heat-index-fht:");
-      str.concat(hif);
-  
-      return str;
-    }
-};
-
-class SerialWriter {
-
-  public:
-    SerialWriter() {}
-
-    bool writeString(String string) {
-      // No need to write nothing - this is going to be treated as success.
-      if (string.equals("")) {
-        return true;
-      }
-    
-      int bytesWritten = Serial.println(string); 
-
-      return bytesWritten > 0;
-    }
-};
-
 class TimeCoordinator {
   private:
     long realWorldStartTime;
@@ -165,6 +104,77 @@ class TimeCoordinator {
     }
 };
 
+class TempHumidityTask {
+  private:
+    OneShotScheduler *scheduler;
+    TimeCoordinator *tc;
+    float lastTempReading;
+
+  public:
+    TempHumidityTask(OneShotScheduler *scheduler, TimeCoordinator *tc) {
+      this->scheduler = scheduler;
+      this->tc = tc;
+    }
+  
+    float getLastTempReading() {
+      return this->lastTempReading;
+    }
+
+    String readSensor() {    
+      if (!this->scheduler->shouldRunTask()) {
+        return "";
+      }
+    
+      // Reading temperature or humidity takes about 250 milliseconds!
+      // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+      float h = dht.readHumidity();
+   
+      // Read temperature as Fahrenheit (isFahrenheit = true)
+      float f = dht.readTemperature(true);
+      this->lastTempReading = f;
+  
+      // Check if any reads failed and exit early (to try again).
+      if (isnan(h) || isnan(f)) {
+        return "&err|Failed to read temp-humid sensor.";
+      }
+  
+      // Compute heat index in Fahrenheit (the default)
+      float hif = dht.computeHeatIndex(f, h);
+
+      this->scheduler->markTaskAsRun();
+  
+      String str = "&th|";
+      str.concat(this->tc->getCurrentTimeStamp());
+      str.concat("|humidity:");
+      str.concat(h);
+      str.concat("|");
+      str.concat("temp-fht:");
+      str.concat(f);
+      str.concat("|");
+      str.concat("heat-index-fht:");
+      str.concat(hif);
+  
+      return str;
+    }
+};
+
+class SerialWriter {
+
+  public:
+    SerialWriter() {}
+
+    bool writeString(String string) {
+      // No need to write nothing - this is going to be treated as success.
+      if (string.equals("")) {
+        return true;
+      }
+    
+      int bytesWritten = Serial.println(string); 
+
+      return bytesWritten > 0;
+    }
+};
+
 class Logger {
   private:
      SerialWriter *sw;
@@ -191,20 +201,21 @@ class ValveOperator {
     Logger *logr;
     int secondsOpen;
     OneShotScheduler *scheduler;
-    int lastDayOffsetRun;
-    int lastMinuteOffsetRun;
+    int lastDayOffsetRun8;
+    int lastDayOffsetRun12;
     long valveOpenedAtTimestamp;
     bool valveOpen;
-    long valveCoolDownTimestamp;
+    TempHumidityTask *tempHumid;
  
   public:
-    ValveOperator(Logger *logr, TimeCoordinator *tc, int secondsOpen, OneShotScheduler *scheduler) {
+    ValveOperator(Logger *logr, TimeCoordinator *tc, int secondsOpen, OneShotScheduler *scheduler, TempHumidityTask *tempHumid) {
       this->secondsOpen = secondsOpen;
       this->logr = logr;
       this->tc = tc;
       this->scheduler = scheduler;
-      this->lastDayOffsetRun = 0;
-      this->valveCoolDownTimestamp = 0;
+      this->lastDayOffsetRun8 = 0;
+      this->lastDayOffsetRun12 = 0;
+      this->tempHumid = tempHumid;
     }
 
     void evaluateSchedule() {
@@ -215,13 +226,7 @@ class ValveOperator {
       this->scheduler->markTaskAsRun();
 
       if (this->valveOpen) {
-        /**
-         * Only close the valve if:
-         *  - We are not in a cool down period (valve was just opened or closed)
-         *  - The valve has been open for the appropriate amount of time.
-         */
-        if (this->tc->getCurrentTimeStamp() > this->valveCoolDownTimestamp && this->tc->getCurrentTimeStamp() > (this->valveOpenedAtTimestamp + this->secondsOpen)) {
-          
+        if (this->tc->getCurrentTimeStamp() > (this->valveOpenedAtTimestamp + this->secondsOpen)) {
           this->closeValve();
         } else {
           // The valve is open and doesnt need to be closed yet.  We can evaluate again soon.
@@ -234,26 +239,29 @@ class ValveOperator {
       int currentMinute = this->tc->getCurrentMinuteOffset();
 
       // Do the 8am check
-//      if (currentDay != this->lastDayOffsetRun && this->tc->getCurrentHourOffset() == 8) {
-//        this->openValve();
-//      }
-
-        // TESTING
+      if (currentDay != this->lastDayOffsetRun8 && this->tc->getCurrentHourOffset() == 8) {
         this->openValve();
+	this->lastDayOffsetRun8 = this->tc->getCurrentDayOffset();
+      }
+
+      if (currentDay != this->lastDayOffsetRun12 && this->tc->getCurrentHourOffset() == 12 && this->tempHumid->getLastTempReading() > 100) {
+        this->openValve();
+	String logString = "Did the 12pm check and determined that it is plenty hot: ";
+        logString.concat(this->tempHumid->getLastTempReading());
+	this->logr->doLog(logString);
+        this->lastDayOffsetRun12 = this->tc->getCurrentDayOffset();
+      } else {
+        String logString = "Did the 12pm check but determined not hot enough today: ";
+        logString.concat(this->tempHumid->getLastTempReading());
+	this->logr->doLog(logString);
+      }
     }
 
     void openValve() {
-      if (this->tc->getCurrentTimeStamp() <= this->valveCoolDownTimestamp) {
-        this->logr->doLog("Attempted to open a valve prior to cooldown completed.");            
-        return;
-      }
-      
       digitalWrite(PIN_WATERVALVE, HIGH);
       this->valveOpen = true;
       this->valveOpenedAtTimestamp = this->tc->getCurrentTimeStamp();
       
-      this->setCoolDownTimestamp();
- 
       this->logr->doLog("Opened valve");
     }
 
@@ -261,14 +269,7 @@ class ValveOperator {
       digitalWrite(PIN_WATERVALVE, LOW);
       this->valveOpen = false;
       this->valveOpenedAtTimestamp = 0;
-      this->setCoolDownTimestamp();
-      this->lastDayOffsetRun = this->tc->getCurrentDayOffset();
-      this->lastMinuteOffsetRun = this->tc->getCurrentMinuteOffset();
       this->logr->doLog("Closed valve");
-    }
-
-    void setCoolDownTimestamp() {
-      this->valveCoolDownTimestamp = this->tc->getCurrentTimeStamp() + VALVE_COOLDOWN_SECONDS;
     }
 };
 
@@ -276,10 +277,10 @@ class ValveOperator {
 SerialWriter serialWriter;
 TimeCoordinator timeKeeper;
 Logger logr(&serialWriter, &timeKeeper);
-OneShotScheduler tempHumidScheduler(60000); // Evaluate if it should run every 5 seconds
-TempHumidityTask tempHumidity(&tempHumidScheduler);
-OneShotScheduler mainWaterValveScheduler(60000); // evaluate if it should run every minute, this does not mean it will run, just that it will have a chance to evaluate.
-ValveOperator mainWaterValve(&logr, &timeKeeper, 30, &mainWaterValveScheduler);
+OneShotScheduler tempHumidScheduler(60000);
+TempHumidityTask tempHumidity(&tempHumidScheduler, &timeKeeper);
+OneShotScheduler mainWaterValveScheduler(10000); // evaluate if it should run every n milliseconds, this does not mean it will run, just that it will have a chance to evaluate.
+ValveOperator mainWaterValve(&logr, &timeKeeper, 30, &mainWaterValveScheduler, &tempHumidity);
 
 void setup() {
   Serial.begin(9600);

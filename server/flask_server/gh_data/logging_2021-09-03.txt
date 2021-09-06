@@ -10,3 +10,574 @@
 &log|1630676318|Opened valve
 &log|1630676438|Closed valve
 &log|1630676438|Attempted to open a valve prior to cooldown completed.
+&log|1630679622|Arduino time synced: 1630679622
+&log|1630679681|Opened valve
+&log|1630679801|Closed valve
+&log|1630679801|Attempted to open a valve prior to cooldown completed.
+&log|1630679861|Attempted to open a valve prior to cooldown completed.
+&log|1630679921|Opened valve
+&log|1630680041|Closed valve
+&log|1630680041|Attempted to open a valve prior to cooldown completed.
+&log|1630680101|Attempted to open a valve prior to cooldown completed.
+&log|1630680161|Opened valve
+&log|1630680281|Closed valve
+&log|1630680281|Attempted to open a valve prior to cooldown completed.
+&log|1630680341|Attempted to open a valve prior to cooldown completed.
+&log|1630680401|Opened valve
+&log|1630680521|Closed valve
+&log|1630680521|Attempted to open a valve prior to cooldown completed.
+&log|1630680581|Attempted to open a valve prior to cooldown completed.
+&log|1630680641|Opened valve
+&log|1630680761|Closed valve
+&log|1630680761|Attempted to open a valve prior to cooldown completed.
+&log|1630680821|Attempted to open a valve prior to cooldown completed.
+&log|1630680881|Opened valve
+&log|1630681001|Closed valve
+&log|1630681001|Attempted to open a valve prior to cooldown completed.
+&log|1630681061|Attempted to open a valve prior to cooldown completed.
+&log|1630681121|Opened valve
+&log|1630681242|Closed valve
+&log|1630681242|Attempted to open a valve prior to cooldown completed.
+&log|1630681302|Attempted to open a valve prior to cooldown completed.
+&log|1630681362|Opened valve
+&log|1630681482|Closed valve
+&log|1630681482|Attempted to open a valve prior to cooldown completed.
+&log|1630681542|Attempted to open a valve prior to cooldown completed.
+&log|1630681602|Opened valve
+&log|1630681722|Closed valve
+&log|1630681722|Attempted to open a valve prior to cooldown completed.
+&log|1630681782|Attempted to open a valve prior to cooldown completed.
+&log|1630681842|Opened valve
+&log|1630681962|Closed valve
+&log|1630681962|Attempted to open a valve prior to cooldown completed.
+&log|1630682022|Attempted to open a valve prior to cooldown completed.
+&log|1630682082|Opened valve
+&log|1630682202|Closed valve
+&log|1630682202|Attempted to open a valve prior to cooldown completed.
+&log|1630682262|Attempted to open a valve prior to cooldown completed.
+&log|1630682322|Opened valve
+&log|1630682442|Closed valve
+&log|1630682442|Attempted to open a valve prior to cooldown completed.
+&log|1630682502|Attempted to open a valve prior to cooldown completed.
+&log|1630682562|Opened valve
+&log|1630682682|Closed valve
+&log|1630682682|Attempted to open a valve prior to cooldown completed.
+&log|1630682742|Attempted to open a valve prior to cooldown completed.
+&log|1630682802|Opened valve
+&log|1630682922|Closed valve
+&log|1630682923|Attempted to open a valve prior to cooldown completed.
+&log|1630682983|Opened valve
+&log|1630683103|Closed valve
+&log|1630683103|Attempted to open a valve prior to cooldown completed.
+&log|1630683163|Attempted to open a valve prior to cooldown completed.
+&log|1630683223|Opened valve
+&log|1630683343|Closed valve
+&log|1630683343|Attempted to open a valve prior to cooldown completed.
+&log|1630683403|Attempted to open a valve prior to cooldown completed.
+&log|1630683463|Opened valve
+&log|1630683583|Closed valve
+&log|1630683583|Attempted to open a valve prior to cooldown completed.
+&log|1630683643|Attempted to open a valve prior to cooldown completed.
+&log|1630683703|Opened valve
+&log|1630683823|Closed valve
+&log|1630683823|Attempted to open a valve prior to cooldown completed.
+&log|1630683883|Attempted to open a valve prior to cooldown completed.
+&log|1630683943|Opened valve
+&log|1630684063|Closed valve
+&log|1630684063|Attempted to open a valve prior to cooldown completed.
+&log|1630684123|Attempted to open a valve prior to cooldown completed.
+&log|1630684183|Opened valve
+&log|1630684303|Closed valve
+&log|1630684303|Attempted to open a valve prior to cooldown completed.
+&log|1630684363|Attempted to open a valve prior to cooldown completed.
+&log|1630684423|Opened valve
+&log|1630684543|Closed valve
+&log|1630684544|Attempted to open a valve prior to cooldown completed.
+&log|1630684604|Opened valve
+&log|1630684724|Closed valve
+&log|1630684724|Attempted to open a valve prior to cooldown completed.
+&log|1630684784|Attempted to open a valve prior to cooldown completed.
+&log|1630684844|Opened valve
+&log|1630684964|Closed valve
+&log|1630684964|Attempted to open a valve prior to cooldown completed.
+&log|1630685024|Attempted to open a valve prior to cooldown completed.
+&log|1630685084|Opened valve
+&log|1630685204|Closed valve
+&log|1630685204|Attempted to open a valve prior to cooldown completed.
+&log|1630685264|Attempted to open a valve prior to cooldown completed.
+&log|1630685324|Opened valve
+&log|1630685444|Closed valve
+&log|1630685444|Attempted to open a valve prior to cooldown completed.
+&log|1630685504|Attempted to open a valve prior to cooldown completed.
+&log|1630685564|Opened valve
+&log|1630685684|Closed valve
+&log|1630685684|Attempted to open a valve prior to cooldown completed.
+&log|1630685744|Attempted to open a valve prior to cooldown completed.
+&log|1630685804|Opened valve
+&log|1630685924|Closed valve
+&log|1630685924|Attempted to open a valve prior to cooldown completed.
+&log|1630685984|Attempted to open a valve prior to cooldown completed.
+&log|1630686044|Opened valve
+&log|1630686164|Closed valve
+&log|1630686164|Attempted to open a valve prior to cooldown completed.
+&log|1630686224|Attempted to open a valve prior to cooldown completed.
+&log|1630686285|Opened valve
+&log|1630686405|Closed valve
+&log|1630686405|Attempted to open a valve prior to cooldown completed.
+&log|1630686465|Attempted to open a valve prior to cooldown completed.
+&log|1630686525|Opened valve
+&log|1630686645|Closed valve
+&log|1630686645|Attempted to open a valve prior to cooldown completed.
+&log|1630686705|Attempted to open a valve prior to cooldown completed.
+&log|1630686765|Opened valve
+&log|1630686885|Closed valve
+&log|1630686885|Attempted to open a valve prior to cooldown completed.
+&log|1630686945|Attempted to open a valve prior to cooldown completed.
+&log|1630687005|Opened valve
+&log|1630687125|Closed valve
+&log|1630687125|Attempted to open a valve prior to cooldown completed.
+&log|1630687185|Attempted to open a valve prior to cooldown completed.
+&log|1630687245|Opened valve
+&log|1630687365|Closed valve
+&log|1630687365|Attempted to open a valve prior to cooldown completed.
+&log|1630687425|Attempted to open a valve prior to cooldown completed.
+&log|1630687485|Opened valve
+&log|1630687605|Closed valve
+&log|1630687605|Attempted to open a valve prior to cooldown completed.
+&log|1630687665|Attempted to open a valve prior to cooldown completed.
+&log|1630687725|Opened valve
+&log|1630687845|Closed valve
+&log|1630687845|Attempted to open a valve prior to cooldown completed.
+&log|1630687905|Attempted to open a valve prior to cooldown completed.
+&log|1630687965|Opened valve
+&log|1630688026|Closed valve
+&log|1630688026|Attempted to open a valve prior to cooldown completed.
+&log|1630688086|Attempted to open a valve prior to cooldown completed.
+&log|1630688146|Opened valve
+&log|1630688266|Closed valve
+&log|1630688266|Attempted to open a valve prior to cooldown completed.
+&log|1630688326|Attempted to open a valve prior to cooldown completed.
+&log|1630688386|Opened valve
+&log|1630688506|Closed valve
+&log|1630688506|Attempted to open a valve prior to cooldown completed.
+&log|1630688566|Attempted to open a valve prior to cooldown completed.
+&log|1630688626|Opened valve
+&log|1630688746|Closed valve
+&log|1630688746|Attempted to open a valve prior to cooldown completed.
+&log|1630688806|Attempted to open a valve prior to cooldown completed.
+&log|1630688866|Opened valve
+&log|1630688986|Closed valve
+&log|1630688986|Attempted to open a valve prior to cooldown completed.
+&log|1630689046|Attempted to open a valve prior to cooldown completed.
+&log|1630689106|Opened valve
+&log|1630689226|Closed valve
+&log|1630689226|Attempted to open a valve prior to cooldown completed.
+&log|1630689286|Attempted to open a valve prior to cooldown completed.
+&log|1630689346|Opened valve
+&log|1630689466|Closed valve
+&log|1630689466|Attempted to open a valve prior to cooldown completed.
+&log|1630689526|Attempted to open a valve prior to cooldown completed.
+&log|1630689586|Opened valve
+&log|1630689647|Closed valve
+&log|1630689647|Attempted to open a valve prior to cooldown completed.
+&log|1630689707|Attempted to open a valve prior to cooldown completed.
+&log|1630689767|Opened valve
+&log|1630689887|Closed valve
+&log|1630689887|Attempted to open a valve prior to cooldown completed.
+&log|1630689947|Attempted to open a valve prior to cooldown completed.
+&log|1630690007|Opened valve
+&log|1630690127|Closed valve
+&log|1630690127|Attempted to open a valve prior to cooldown completed.
+&log|1630690187|Attempted to open a valve prior to cooldown completed.
+&log|1630690247|Opened valve
+&log|1630690367|Closed valve
+&log|1630690367|Attempted to open a valve prior to cooldown completed.
+&log|1630690427|Attempted to open a valve prior to cooldown completed.
+&log|1630690487|Opened valve
+&log|1630690607|Closed valve
+&log|1630690607|Attempted to open a valve prior to cooldown completed.
+&log|1630690667|Attempted to open a valve prior to cooldown completed.
+&log|1630690727|Opened valve
+&log|1630690847|Closed valve
+&log|1630690847|Attempted to open a valve prior to cooldown completed.
+&log|1630690907|Attempted to open a valve prior to cooldown completed.
+&log|1630690967|Opened valve
+&log|1630691087|Closed valve
+&log|1630691087|Attempted to open a valve prior to cooldown completed.
+&log|1630691147|Attempted to open a valve prior to cooldown completed.
+&log|1630691207|Opened valve
+&log|1630691327|Closed valve
+&log|1630691328|Attempted to open a valve prior to cooldown completed.
+&log|1630691388|Opened valve
+&log|1630691508|Closed valve
+&log|1630691508|Attempted to open a valve prior to cooldown completed.
+&log|1630691568|Attempted to open a valve prior to cooldown completed.
+&log|1630691628|Opened valve
+&log|1630691748|Closed valve
+&log|1630691748|Attempted to open a valve prior to cooldown completed.
+&log|1630691808|Attempted to open a valve prior to cooldown completed.
+&log|1630691868|Opened valve
+&log|1630691988|Closed valve
+&log|1630691988|Attempted to open a valve prior to cooldown completed.
+&log|1630692048|Attempted to open a valve prior to cooldown completed.
+&log|1630692108|Opened valve
+&log|1630692228|Closed valve
+&log|1630692228|Attempted to open a valve prior to cooldown completed.
+&log|1630692288|Attempted to open a valve prior to cooldown completed.
+&log|1630692348|Opened valve
+&log|1630692468|Closed valve
+&log|1630692468|Attempted to open a valve prior to cooldown completed.
+&log|1630692528|Attempted to open a valve prior to cooldown completed.
+&log|1630692588|Opened valve
+&log|1630692708|Closed valve
+&log|1630692708|Attempted to open a valve prior to cooldown completed.
+&log|1630692768|Attempted to open a valve prior to cooldown completed.
+&log|1630692828|Opened valve
+&log|1630692948|Closed valve
+&log|1630692948|Attempted to open a valve prior to cooldown completed.
+&log|1630693008|Attempted to open a valve prior to cooldown completed.
+&log|1630693069|Opened valve
+&log|1630693189|Closed valve
+&log|1630693189|Attempted to open a valve prior to cooldown completed.
+&log|1630693249|Attempted to open a valve prior to cooldown completed.
+&log|1630693309|Opened valve
+&log|1630693429|Closed valve
+&log|1630693429|Attempted to open a valve prior to cooldown completed.
+&log|1630693489|Attempted to open a valve prior to cooldown completed.
+&log|1630693549|Opened valve
+&log|1630693669|Closed valve
+&log|1630693669|Attempted to open a valve prior to cooldown completed.
+&log|1630693729|Attempted to open a valve prior to cooldown completed.
+&log|1630693789|Opened valve
+&log|1630693909|Closed valve
+&log|1630693909|Attempted to open a valve prior to cooldown completed.
+&log|1630693969|Attempted to open a valve prior to cooldown completed.
+&log|1630694029|Opened valve
+&log|1630694149|Closed valve
+&log|1630694149|Attempted to open a valve prior to cooldown completed.
+&log|1630694209|Attempted to open a valve prior to cooldown completed.
+&log|1630694269|Opened valve
+&log|1630694389|Closed valve
+&log|1630694389|Attempted to open a valve prior to cooldown completed.
+&log|1630694449|Attempted to open a valve prior to cooldown completed.
+&log|1630694509|Opened valve
+&log|1630694629|Closed valve
+&log|1630694629|Attempted to open a valve prior to cooldown completed.
+&log|1630694689|Attempted to open a valve prior to cooldown completed.
+&log|1630694749|Opened valve
+&log|1630694810|Closed valve
+&log|1630694810|Attempted to open a valve prior to cooldown completed.
+&log|1630694870|Attempted to open a valve prior to cooldown completed.
+&log|1630694930|Opened valve
+&log|1630695050|Closed valve
+&log|1630695050|Attempted to open a valve prior to cooldown completed.
+&log|1630695110|Attempted to open a valve prior to cooldown completed.
+&log|1630695170|Opened valve
+&log|1630695290|Closed valve
+&log|1630695290|Attempted to open a valve prior to cooldown completed.
+&log|1630695350|Attempted to open a valve prior to cooldown completed.
+&log|1630695410|Opened valve
+&log|1630695530|Closed valve
+&log|1630695530|Attempted to open a valve prior to cooldown completed.
+&log|1630695590|Attempted to open a valve prior to cooldown completed.
+&log|1630695650|Opened valve
+&log|1630695770|Closed valve
+&log|1630695770|Attempted to open a valve prior to cooldown completed.
+&log|1630695830|Attempted to open a valve prior to cooldown completed.
+&log|1630695890|Opened valve
+&log|1630696010|Closed valve
+&log|1630696010|Attempted to open a valve prior to cooldown completed.
+&log|1630696070|Attempted to open a valve prior to cooldown completed.
+&log|1630696130|Opened valve
+&log|1630696250|Closed valve
+&log|1630696250|Attempted to open a valve prior to cooldown completed.
+&log|1630696310|Attempted to open a valve prior to cooldown completed.
+&log|1630696370|Opened valve
+&log|1630696491|Closed valve
+&log|1630696491|Attempted to open a valve prior to cooldown completed.
+&log|1630696551|Attempted to open a valve prior to cooldown completed.
+&log|1630696611|Opened valve
+&log|1630696731|Closed valve
+&log|1630696731|Attempted to open a valve prior to cooldown completed.
+&log|1630696791|Attempted to open a valve prior to cooldown completed.
+&log|1630696851|Opened valve
+&log|1630696971|Closed valve
+&log|1630696971|Attempted to open a valve prior to cooldown completed.
+&log|1630697031|Attempted to open a valve prior to cooldown completed.
+&log|1630697091|Opened valve
+&log|1630697211|Closed valve
+&log|1630697211|Attempted to open a valve prior to cooldown completed.
+&log|1630697271|Attempted to open a valve prior to cooldown completed.
+&log|1630697331|Opened valve
+&log|1630697451|Closed valve
+&log|1630697451|Attempted to open a valve prior to cooldown completed.
+&log|1630697511|Attempted to open a valve prior to cooldown completed.
+&log|1630697571|Opened valve
+&log|1630697691|Closed valve
+&log|1630697691|Attempted to open a valve prior to cooldown completed.
+&log|1630697751|Attempted to open a valve prior to cooldown completed.
+&log|1630697811|Opened valve
+&log|1630697931|Closed valve
+&log|1630697931|Attempted to open a valve prior to cooldown completed.
+&log|1630697991|Attempted to open a valve prior to cooldown completed.
+&log|1630698051|Opened valve
+&log|1630698172|Closed valve
+&log|1630698172|Attempted to open a valve prior to cooldown completed.
+&log|1630698232|Attempted to open a valve prior to cooldown completed.
+&log|1630698292|Opened valve
+&log|1630698412|Closed valve
+&log|1630698412|Attempted to open a valve prior to cooldown completed.
+&log|1630698472|Attempted to open a valve prior to cooldown completed.
+&log|1630698532|Opened valve
+&log|1630698652|Closed valve
+&log|1630698652|Attempted to open a valve prior to cooldown completed.
+&log|1630698712|Attempted to open a valve prior to cooldown completed.
+&log|1630698772|Opened valve
+&log|1630698892|Closed valve
+&log|1630698892|Attempted to open a valve prior to cooldown completed.
+&log|1630698952|Attempted to open a valve prior to cooldown completed.
+&log|1630699012|Opened valve
+&log|1630699132|Closed valve
+&log|1630699132|Attempted to open a valve prior to cooldown completed.
+&log|1630699192|Attempted to open a valve prior to cooldown completed.
+&log|1630699252|Opened valve
+&log|1630699372|Closed valve
+&log|1630699372|Attempted to open a valve prior to cooldown completed.
+&log|1630699432|Attempted to open a valve prior to cooldown completed.
+&log|1630699492|Opened valve
+&log|1630699612|Closed valve
+&log|1630699612|Attempted to open a valve prior to cooldown completed.
+&log|1630699672|Attempted to open a valve prior to cooldown completed.
+&log|1630699732|Opened valve
+&log|1630699852|Closed valve
+&log|1630699853|Attempted to open a valve prior to cooldown completed.
+&log|1630699913|Opened valve
+&log|1630700033|Closed valve
+&log|1630700033|Attempted to open a valve prior to cooldown completed.
+&log|1630700093|Attempted to open a valve prior to cooldown completed.
+&log|1630700153|Opened valve
+&log|1630700273|Closed valve
+&log|1630700273|Attempted to open a valve prior to cooldown completed.
+&log|1630700333|Attempted to open a valve prior to cooldown completed.
+&log|1630700393|Opened valve
+&log|1630700513|Closed valve
+&log|1630700513|Attempted to open a valve prior to cooldown completed.
+&log|1630700573|Attempted to open a valve prior to cooldown completed.
+&log|1630700633|Opened valve
+&log|1630700753|Closed valve
+&log|1630700753|Attempted to open a valve prior to cooldown completed.
+&log|1630700813|Attempted to open a valve prior to cooldown completed.
+&log|1630700873|Opened valve
+&log|1630700993|Closed valve
+&log|1630700993|Attempted to open a valve prior to cooldown completed.
+&log|1630701053|Attempted to open a valve prior to cooldown completed.
+&log|1630701113|Opened valve
+&log|1630701233|Closed valve
+&log|1630701233|Attempted to open a valve prior to cooldown completed.
+&log|1630701293|Attempted to open a valve prior to cooldown completed.
+&log|1630701353|Opened valve
+&log|1630701473|Closed valve
+&log|1630701473|Attempted to open a valve prior to cooldown completed.
+&log|1630701533|Attempted to open a valve prior to cooldown completed.
+&log|1630701594|Opened valve
+&log|1630701714|Closed valve
+&log|1630701714|Attempted to open a valve prior to cooldown completed.
+&log|1630701774|Attempted to open a valve prior to cooldown completed.
+&log|1630701834|Opened valve
+&log|1630701954|Closed valve
+&log|1630701954|Attempted to open a valve prior to cooldown completed.
+&log|1630702014|Attempted to open a valve prior to cooldown completed.
+&log|1630702074|Opened valve
+&log|1630702194|Closed valve
+&log|1630702194|Attempted to open a valve prior to cooldown completed.
+&log|1630702254|Attempted to open a valve prior to cooldown completed.
+&log|1630702314|Opened valve
+&log|1630702434|Closed valve
+&log|1630702434|Attempted to open a valve prior to cooldown completed.
+&log|1630702494|Attempted to open a valve prior to cooldown completed.
+&log|1630702554|Opened valve
+&log|1630702674|Closed valve
+&log|1630702674|Attempted to open a valve prior to cooldown completed.
+&log|1630702734|Attempted to open a valve prior to cooldown completed.
+&log|1630702794|Opened valve
+&log|1630702914|Closed valve
+&log|1630702914|Attempted to open a valve prior to cooldown completed.
+&log|1630702974|Attempted to open a valve prior to cooldown completed.
+&log|1630703034|Opened valve
+&log|1630703154|Closed valve
+&log|1630703154|Attempted to open a valve prior to cooldown completed.
+&log|1630703214|Attempted to open a valve prior to cooldown completed.
+&log|1630703274|Opened valve
+&log|1630703335|Closed valve
+&log|1630703335|Attempted to open a valve prior to cooldown completed.
+&log|1630703395|Attempted to open a valve prior to cooldown completed.
+&log|1630703455|Opened valve
+&log|1630703575|Closed valve
+&log|1630703575|Attempted to open a valve prior to cooldown completed.
+&log|1630703635|Attempted to open a valve prior to cooldown completed.
+&log|1630703695|Opened valve
+&log|1630703815|Closed valve
+&log|1630703815|Attempted to open a valve prior to cooldown completed.
+&log|1630703875|Attempted to open a valve prior to cooldown completed.
+&log|1630703935|Opened valve
+&log|1630704055|Closed valve
+&log|1630704055|Attempted to open a valve prior to cooldown completed.
+&log|1630704115|Attempted to open a valve prior to cooldown completed.
+&log|1630704175|Opened valve
+&log|1630704295|Closed valve
+&log|1630704295|Attempted to open a valve prior to cooldown completed.
+&log|1630704355|Attempted to open a valve prior to cooldown completed.
+&log|1630704415|Opened valve
+&log|1630704535|Closed valve
+&log|1630704535|Attempted to open a valve prior to cooldown completed.
+&log|1630704595|Attempted to open a valve prior to cooldown completed.
+&log|1630704655|Opened valve
+&log|1630704775|Closed valve
+&log|1630704775|Attempted to open a valve prior to cooldown completed.
+&log|1630704835|Attempted to open a valve prior to cooldown completed.
+&log|1630704895|Opened valve
+&log|1630705016|Closed valve
+&log|1630705016|Attempted to open a valve prior to cooldown completed.
+&log|1630705076|Attempted to open a valve prior to cooldown completed.
+&log|1630705136|Opened valve
+&log|1630705256|Closed valve
+&log|1630705256|Attempted to open a valve prior to cooldown completed.
+&log|1630705316|Attempted to open a valve prior to cooldown completed.
+&log|1630705376|Opened valve
+&log|1630705496|Closed valve
+&log|1630705496|Attempted to open a valve prior to cooldown completed.
+&log|1630705556|Attempted to open a valve prior to cooldown completed.
+&log|1630705616|Opened valve
+&log|1630705736|Closed valve
+&log|1630705736|Attempted to open a valve prior to cooldown completed.
+&log|1630705796|Attempted to open a valve prior to cooldown completed.
+&log|1630705856|Opened valve
+&log|1630705976|Closed valve
+&log|1630705976|Attempted to open a valve prior to cooldown completed.
+&log|1630706036|Attempted to open a valve prior to cooldown completed.
+&log|1630706096|Opened valve
+&log|1630706216|Closed valve
+&log|1630706216|Attempted to open a valve prior to cooldown completed.
+&log|1630706276|Attempted to open a valve prior to cooldown completed.
+&log|1630706336|Opened valve
+&log|1630706456|Closed valve
+&log|1630706456|Attempted to open a valve prior to cooldown completed.
+&log|1630706516|Attempted to open a valve prior to cooldown completed.
+&log|1630706576|Opened valve
+&log|1630706697|Closed valve
+&log|1630706697|Attempted to open a valve prior to cooldown completed.
+&log|1630706757|Attempted to open a valve prior to cooldown completed.
+&log|1630706817|Opened valve
+&log|1630706937|Closed valve
+&log|1630706937|Attempted to open a valve prior to cooldown completed.
+&log|1630706997|Attempted to open a valve prior to cooldown completed.
+&log|1630707057|Opened valve
+&log|1630707177|Closed valve
+&log|1630707177|Attempted to open a valve prior to cooldown completed.
+&log|1630707237|Attempted to open a valve prior to cooldown completed.
+&log|1630707297|Opened valve
+&log|1630707417|Closed valve
+&log|1630707417|Attempted to open a valve prior to cooldown completed.
+&log|1630707477|Attempted to open a valve prior to cooldown completed.
+&log|1630707537|Opened valve
+&log|1630707657|Closed valve
+&log|1630707657|Attempted to open a valve prior to cooldown completed.
+&log|1630707717|Attempted to open a valve prior to cooldown completed.
+&log|1630707777|Opened valve
+&log|1630707897|Closed valve
+&log|1630707897|Attempted to open a valve prior to cooldown completed.
+&log|1630707957|Attempted to open a valve prior to cooldown completed.
+&log|1630708017|Opened valve
+&log|1630708137|Closed valve
+&log|1630708137|Attempted to open a valve prior to cooldown completed.
+&log|1630708197|Attempted to open a valve prior to cooldown completed.
+&log|1630708257|Opened valve
+&log|1630708377|Closed valve
+&log|1630708378|Attempted to open a valve prior to cooldown completed.
+&log|1630708438|Opened valve
+&log|1630708558|Closed valve
+&log|1630708558|Attempted to open a valve prior to cooldown completed.
+&log|1630708618|Attempted to open a valve prior to cooldown completed.
+&log|1630708678|Opened valve
+&log|1630708798|Closed valve
+&log|1630708798|Attempted to open a valve prior to cooldown completed.
+&log|1630708858|Attempted to open a valve prior to cooldown completed.
+&log|1630708918|Opened valve
+&log|1630709038|Closed valve
+&log|1630709038|Attempted to open a valve prior to cooldown completed.
+&log|1630709098|Attempted to open a valve prior to cooldown completed.
+&log|1630709158|Opened valve
+&log|1630709278|Closed valve
+&log|1630709278|Attempted to open a valve prior to cooldown completed.
+&log|1630709338|Attempted to open a valve prior to cooldown completed.
+&log|1630709398|Opened valve
+&log|1630709518|Closed valve
+&log|1630709518|Attempted to open a valve prior to cooldown completed.
+&log|1630709578|Attempted to open a valve prior to cooldown completed.
+&log|1630709638|Opened valve
+&log|1630709758|Closed valve
+&log|1630709758|Attempted to open a valve prior to cooldown completed.
+&log|1630709818|Attempted to open a valve prior to cooldown completed.
+&log|1630709878|Opened valve
+&log|1630709998|Closed valve
+&log|1630709998|Attempted to open a valve prior to cooldown completed.
+&log|1630710058|Attempted to open a valve prior to cooldown completed.
+&log|1630710119|Opened valve
+&log|1630710239|Closed valve
+&log|1630710239|Attempted to open a valve prior to cooldown completed.
+&log|1630710299|Attempted to open a valve prior to cooldown completed.
+&log|1630710359|Opened valve
+&log|1630710479|Closed valve
+&log|1630710479|Attempted to open a valve prior to cooldown completed.
+&log|1630710539|Attempted to open a valve prior to cooldown completed.
+&log|1630710599|Opened valve
+&log|1630710719|Closed valve
+&log|1630710719|Attempted to open a valve prior to cooldown completed.
+&log|1630710779|Attempted to open a valve prior to cooldown completed.
+&log|1630710839|Opened valve
+&log|1630710959|Closed valve
+&log|1630710959|Attempted to open a valve prior to cooldown completed.
+&log|1630711019|Attempted to open a valve prior to cooldown completed.
+&log|1630711079|Opened valve
+&log|1630711199|Closed valve
+&log|1630711199|Attempted to open a valve prior to cooldown completed.
+&log|1630711259|Attempted to open a valve prior to cooldown completed.
+&log|1630711319|Opened valve
+&log|1630711439|Closed valve
+&log|1630711439|Attempted to open a valve prior to cooldown completed.
+&log|1630711499|Attempted to open a valve prior to cooldown completed.
+&log|1630711559|Opened valve
+&log|1630711679|Closed valve
+&log|1630711679|Attempted to open a valve prior to cooldown completed.
+&log|1630711739|Attempted to open a valve prior to cooldown completed.
+&log|1630711799|Opened valve
+&log|1630711860|Closed valve
+&log|1630711860|Attempted to open a valve prior to cooldown completed.
+&log|1630711920|Attempted to open a valve prior to cooldown completed.
+&log|1630711980|Opened valve
+&log|1630712100|Closed valve
+&log|1630712100|Attempted to open a valve prior to cooldown completed.
+&log|1630712160|Attempted to open a valve prior to cooldown completed.
+&log|1630712220|Opened valve
+&log|1630712340|Closed valve
+&log|1630712340|Attempted to open a valve prior to cooldown completed.
+&log|1630712400|Attempted to open a valve prior to cooldown completed.
+&log|1630712460|Opened valve
+&log|1630712580|Closed valve
+&log|1630712580|Attempted to open a valve prior to cooldown completed.
+&log|1630712640|Attempted to open a valve prior to cooldown completed.
+&log|1630712700|Opened valve
+&log|1630712820|Closed valve
+&log|1630712820|Attempted to open a valve prior to cooldown completed.
+&log|1630712880|Attempted to open a valve prior to cooldown completed.
+&log|1630712940|Opened valve
+&log|1630713060|Closed valve
+&log|1630713060|Attempted to open a valve prior to cooldown completed.
+&log|1630713120|Attempted to open a valve prior to cooldown completed.
+&log|1630713180|Opened valve
+&log|1630713300|Closed valve
+&log|1630713300|Attempted to open a valve prior to cooldown completed.
+&log|1630713360|Attempted to open a valve prior to cooldown completed.
+&log|1630713420|Opened valve
+&log|1630713541|Closed valve
+&log|1630713541|Attempted to open a valve prior to cooldown completed.

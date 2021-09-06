@@ -1,0 +1,2 @@
+&log|1630915247|Opened valve
+&log|1630915367|Closed valve

@@ -2,7 +2,15 @@ import serial
 import time
 import requests
 
-ser = serial.Serial('/dev/ttyACM0')
+ser = None;
+
+while (True):
+    try:
+        ser = serial.Serial('/dev/ttyACM0')
+    except:
+        print("No serial, will try again soon.")
+        sleep(5)
+
     
 while (True):
     ser_bytes = ser.readline()

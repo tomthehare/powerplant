@@ -1,0 +1,3 @@
+&log|1630829282|Arduino time synced: 1630829282
+&log|1630829341|Opened valve
+&log|1630829461|Closed valve
