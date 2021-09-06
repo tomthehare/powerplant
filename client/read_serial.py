@@ -7,6 +7,7 @@ ser = None;
 while (True):
     try:
         ser = serial.Serial('/dev/ttyACM0')
+        break;
     except:
         print("No serial, will try again soon.")
         time.sleep(5)
