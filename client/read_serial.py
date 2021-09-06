@@ -9,7 +9,7 @@ while (True):
         ser = serial.Serial('/dev/ttyACM0')
     except:
         print("No serial, will try again soon.")
-        sleep(5)
+        time.sleep(5)
 
     
 while (True):
