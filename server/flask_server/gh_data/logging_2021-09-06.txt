@@ -1,2 +1,56 @@
 &log|1630915247|Opened valve
 &log|1630915367|Closed valve
+&log|1630928181|Arduino time synced: 1630928181
+&log|1630928190|Did the 12pm check but determined not hot enough today: 0.00
+&log|1630928200|Did the 12pm check but determined not hot enough today: 0.00
+&log|1630928210|Did the 12pm check but determined not hot enough today: 0.00
+&log|1630928220|Did the 12pm check but determined not hot enough today: 0.00
+&log|1630928230|Did the 12pm check but determined not hot enough today: 0.00
+&log|1630928240|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928250|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928260|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928270|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928280|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928290|Did the 12pm check but determined not hot enough today: 77.18
+&log|1630928300|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928310|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928320|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928330|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928340|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928350|Did the 12pm check but determined not hot enough today: 81.50
+&log|1630928360|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928370|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928380|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928390|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928400|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928410|Did the 12pm check but determined not hot enough today: 81.86
+&log|1630928420|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928430|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928440|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928450|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928460|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928470|Did the 12pm check but determined not hot enough today: 82.04
+&log|1630928480|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928490|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928500|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928510|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928520|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928530|Did the 12pm check but determined not hot enough today: 82.40
+&log|1630928540|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928550|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928560|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928570|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928580|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928590|Did the 12pm check but determined not hot enough today: 82.58
+&log|1630928600|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928610|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928620|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928630|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928641|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928651|Did the 12pm check but determined not hot enough today: 82.76
+&log|1630928661|Did the 12pm check but determined not hot enough today: 82.94
+&log|1630928671|Did the 12pm check but determined not hot enough today: 82.94
+&log|1630929276|Arduino time synced: 1630929276
+&log|1630929605|Opened valve
+&log|1630929605|Did the 12pm check and determined that it is plenty hot: 86.18
+&log|1630929645|Closed valve

@@ -1,0 +1,5 @@
+&log|1631001607|Opened valve
+&log|1631001647|Closed valve
+&log|1631016005|Opened valve
+&log|1631016005|Did the 12pm check and determined that it is plenty hot: 86.90
+&log|1631016045|Closed valve

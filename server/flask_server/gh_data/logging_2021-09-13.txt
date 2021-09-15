@@ -1,0 +1,7 @@
+&log|1631523564|Arduino time synced: 1631523564
+&log|1631523573|Opened valve
+&log|1631523613|Closed valve
+&log|1631534409|Opened valve
+&log|1631534409|Did the 12pm check and determined that it is plenty hot: 84.74
+&log|1631534449|Closed valve
+&log|1631552892|Hello- the build is build A.  Arduino time synced: 1631552892

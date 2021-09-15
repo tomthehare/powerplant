@@ -11,10 +11,10 @@ try:
     
     data = cur.fetchone()
     
-    print "SQLite Version: %s " % data
+    print("SQLite Version: %s " % data)
     
-except sqlite3.Error, e:
-    print "Error %s:" % e.args[0]
+except sqlite3.Error as e:
+    print("Error %s:" % e.args[0])
     sys.exit(1)
 finally:
     if con:
