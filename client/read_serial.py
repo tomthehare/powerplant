@@ -12,9 +12,11 @@ def get_adjusted_offset_seconds():
 while (True):
     try:
         ser = serial.Serial('/dev/ttyACM0')
-        break;
-    except:
+        break
+
+    except Exception as ex:
         print("No serial, will try again soon.")
+        print(ex)
         time.sleep(5)
 
     
