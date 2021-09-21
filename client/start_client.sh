@@ -4,4 +4,4 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-python3 test.py
+python3 read_serial.py
