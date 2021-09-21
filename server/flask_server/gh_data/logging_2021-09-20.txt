@@ -1,0 +1,3 @@
+&log|1632124803|Opened valve
+&log|1632124863|Closed valve
+&log|1632139201|Did the 12pm check but determined not hot enough today: 79.34

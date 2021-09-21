@@ -1,0 +1,17 @@
+
+
+Humidity
+  Timestamp INTEGER PRIMARY KEY
+  Percentage REAL
+
+Temperature
+  Timestamp INTEGER PRIMARY KEY
+  DegreesF REAL
+
+CpuTemperature
+  Timestamp INTEGER PRIMARY KEY
+  DegreesF REAL
+
+ValveOperation
+  Timestamp INTEGER PRIMARY KEY
+  OperationType INTEGER [1 = Open, 2 = Close]

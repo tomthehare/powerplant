@@ -2,8 +2,26 @@ from flask import Flask, request, jsonify
 from datetime import datetime
 import time
 import json
+from database.client import DatabaseClient
 
 app = Flask(__name__)
+client = DatabaseClient("powerplant.db")
+
+class ConnectionWrapper:
+
+    _cursor = None
+    _connection = None
+    _last_rows = None
+
+    def __init__(self, database_name):
+        self._connection = sqlite3.connect(database_name)
+        self._cursor = self._connection.cursor()
+
+    def execute_sql(self, 
+
+@app.before_first_request
+def ensure_db_exists():
+    client.create_tables_if_not_exist()
 
 def write_to_file(filename_prefix: str, data_string: str):
   dateTimeObj = datetime.now()
@@ -30,17 +48,26 @@ def cpu_temp():
   temp_c = pieces[0].split(":")[1]
   temp_f = pieces[1].split(":")[1]
 
-  string_to_write = ",".join([str(round(time.time())), temp_c, temp_f])  
+  string_to_write = ",".join([str(), temp_c, temp_f])  
 
-  write_to_file("cpu_temp_", string_to_write)
+  # write_to_file("cpu_temp_", string_to_write)
+  client.insert_cpu_temperature(round(time.time()), temp_f)
     
   return jsonify(isError=False, message="Success", statusCode=200), 200
 
 @app.route('/logging', methods = ['POST'])
 def logging():
   data = request.form
+
+  pieces = data.get("data").split("|")
+  
+  print(str(pieces))
+  
+  timestamp = pieces[1]
+  log_text = pieces[2]
  
-  write_to_file("logging_", data.get("data")) 
+  # write_to_file("logging_", data.get("data"))
+  client.insert_log(timestamp, log_text)
 
   print(data.get("data"))
     
@@ -72,7 +99,10 @@ def persist_temp_and_humid():
 
   the_real_string = ','.join([unix_timestamp, humidity_value, temp_value, heat_index_value])
  
-  write_to_file("temp_humidity_", the_real_string) 
+  # write_to_file("temp_humidity_", the_real_string)
+  client.insert_temperature(unix_timestamp, temp_value)
+  client.insert_humidity(unix_timestamp, humidity_value)
+  client.insert_heat_index(unix_timestamp, heat_index_value)
 
   print(json.dumps(dict_of_data, indent=4))
     
