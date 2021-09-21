@@ -3,21 +3,16 @@ from datetime import datetime
 import time
 import json
 from database.client import DatabaseClient
+import pytz
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
 
-class ConnectionWrapper:
 
-    _cursor = None
-    _connection = None
-    _last_rows = None
+def get_adjusted_offset_seconds():
+    now = datetime.now(pytz.timezone('America/New_York'))
+    return now.utcoffset().total_seconds()
 
-    def __init__(self, database_name):
-        self._connection = sqlite3.connect(database_name)
-        self._cursor = self._connection.cursor()
-
-    def execute_sql(self, 
 
 @app.before_first_request
 def ensure_db_exists():
@@ -63,7 +58,7 @@ def logging():
   
   print(str(pieces))
   
-  timestamp = pieces[1]
+  timestamp = pieces[1] + get_adjusted_offset_seconds() 
   log_text = pieces[2]
  
   # write_to_file("logging_", data.get("data"))
@@ -81,7 +76,7 @@ def persist_temp_and_humid():
   
   print(str(pieces))
   
-  unix_timestamp = pieces[1]
+  unix_timestamp = pieces[1] + get_adjusted_offset_seconds()
   humidity_string = pieces[2]
   temp_string = pieces[3]
   heat_index = pieces[4]

@@ -1,8 +1,13 @@
 import serial
 import time
 import requests
+import pytz
 
 ser = None;
+
+def get_adjusted_offset_seconds():
+    now = datetime.datetime.now(pytz.timezone('America/New_York'))
+    return now.utcoffset().total_seconds()
 
 while (True):
     try:
@@ -19,7 +24,7 @@ while (True):
 
     if decoded_bytes == "time-please":
         print("Negotiating time with arduino...")
-        current_time_adjusted = round(time.time()) - 14400;
+        current_time_adjusted = round(time.time()) + get_adjusted_offset_seconds()
         
         print("It is " + str(current_time_adjusted))
         ser.write(bytes(str(current_time_adjusted) + '>', 'ascii'))
