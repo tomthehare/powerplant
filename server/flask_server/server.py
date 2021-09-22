@@ -1,12 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 import time
 import json
+from json2html import *
 from database.client import DatabaseClient
 import pytz
+from time_helper import format_timestamp_as_local
+from graph_helper import GraphHelper
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
+graph_helper = GraphHelper(client)
 
 
 def get_adjusted_offset_seconds():
@@ -29,8 +33,22 @@ def write_to_file(filename_prefix: str, data_string: str):
 
 @app.route('/')
 def hello():
-  return 'hey there fella'
+  return 'hey there fella ' + str(get_adjusted_offset_seconds())
 
+
+@app.route('/scatter', methods=['GET'])
+def scatter():
+    date_start = round(time.time() - 86700)
+    date_end = round(time.time())
+    
+    plot_object = graph_helper.get_temperature(date_start, date_end)
+
+    return render_template(
+        "scatter.html",
+        date_start=format_timestamp_as_local(date_start),
+        date_end=format_timestamp_as_local(date_end),
+        plot1=plot_object
+    )
 
 @app.route('/cpu-temp', methods = ['POST'])
 def cpu_temp():  
@@ -58,7 +76,7 @@ def logging():
   
   print(str(pieces))
   
-  timestamp = pieces[1] + get_adjusted_offset_seconds() 
+  timestamp = float(pieces[1]) - get_adjusted_offset_seconds() 
   log_text = pieces[2]
  
   # write_to_file("logging_", data.get("data"))
@@ -74,9 +92,7 @@ def persist_temp_and_humid():
 
   pieces = data.get("data").split("|")
   
-  print(str(pieces))
-  
-  unix_timestamp = pieces[1] + get_adjusted_offset_seconds()
+  unix_timestamp = float(pieces[1]) - get_adjusted_offset_seconds()
   humidity_string = pieces[2]
   temp_string = pieces[3]
   heat_index = pieces[4]
@@ -90,9 +106,9 @@ def persist_temp_and_humid():
   heat_index_pieces = heat_index.split(":")
   heat_index_value = heat_index_pieces[1]
 
-  dict_of_data = {"humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
+  dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
 
-  the_real_string = ','.join([unix_timestamp, humidity_value, temp_value, heat_index_value])
+  # the_real_string = ','.join([str(unix_timestamp), humidity_value, temp_value, heat_index_value])
  
   # write_to_file("temp_humidity_", the_real_string)
   client.insert_temperature(unix_timestamp, temp_value)
@@ -102,3 +118,26 @@ def persist_temp_and_humid():
   print(json.dumps(dict_of_data, indent=4))
     
   return jsonify(isError=False, message="Success", statusCode=200), 200
+
+@app.route('/summary', methods = ['GET'])
+def show_summary():
+    now = round(time.time())
+    temps = client.read_temperature(now - 300, now)
+    humids = client.read_humidity(now - 300, now)
+    heat_indexes = client.read_heat_index(now - 300, now)
+    
+    output_dict = {}
+    
+    most_recent_temp = temps[len(temps)-1]
+    most_recent_humid = humids[len(humids)-1]
+    most_recent_heat_index = heat_indexes[len(heat_indexes)-1]
+    
+    output_dict['temperature'] = {'Time': format_timestamp_as_local(most_recent_temp[0]), 'DegreesF': most_recent_temp[1]}
+    output_dict['humidity'] = {'Time': format_timestamp_as_local(most_recent_humid[0]), 'Percentage': most_recent_humid[1]}
+    output_dict['heat-index'] = {'Time': format_timestamp_as_local(most_recent_heat_index[0]), 'DegreesF': most_recent_heat_index[1]}
+    
+    json_dict = json.dumps(output_dict)
+
+    output = json2html.convert(json_dict)
+
+    return output, 200
