@@ -27,12 +27,32 @@ class DatabaseClient:
                     DegreesF REAL
                 );
             """
+            connection.execute_sql(temperature_table_sql)
+
+
+        if "OutsideTemperature" not in tables:
+            temperature_table_sql = """
+             CREATE TABLE OutsideTemperature (
+                    Timestamp INTEGER PRIMARY KEY,
+                    DegreesF REAL
+                );
+            """
 
             connection.execute_sql(temperature_table_sql)
             
         if "HeatIndex" not in tables:
             heat_index_table_sql = """
              CREATE TABLE HeatIndex (
+                    Timestamp INTEGER PRIMARY KEY,
+                    DegreesF REAL
+                );
+            """
+
+            connection.execute_sql(heat_index_table_sql)
+
+        if "OutsideHeatIndex" not in tables:
+            heat_index_table_sql = """
+             CREATE TABLE OutsideHeatIndex (
                     Timestamp INTEGER PRIMARY KEY,
                     DegreesF REAL
                 );
@@ -48,6 +68,16 @@ class DatabaseClient:
             )
             """
             connection.execute_sql(humidity_table_sql)
+
+        if "OutsideHumidity" not in tables:
+            humidity_table_sql = """
+            CREATE TABLE OutsideHumidity (
+                Timestamp INTEGER PRIMARY KEY,
+                Percentage REAL
+            )
+            """
+            connection.execute_sql(humidity_table_sql)
+
 
         if "CpuTemperature" not in tables:
             cpu_temp_table_sql = """
@@ -128,7 +158,7 @@ class DatabaseClient:
         finally:
             connection.wrap_it_up()
 
-    def insert_temperature(
+    def insert_inside_temperature(
         self,
         timestamp,
         degrees_f
@@ -144,8 +174,44 @@ class DatabaseClient:
             connection.execute_sql(sql)
         finally:
             connection.wrap_it_up()
+
+
+    def insert_outside_temperature(
+        self,
+        timestamp,
+        degrees_f
+    ):
+        sql = f"""
+        INSERT INTO OutsideTemperature (Timestamp, DegreesF)
+        VALUES ({timestamp}, {degrees_f})
+        """
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
             
-    def insert_heat_index(
+    def insert_outside_heat_index(
+        self,
+        timestamp,
+        degrees_f
+    ):
+        sql = f"""
+        INSERT INTO OutsideHeatIndex (Timestamp, DegreesF)
+        VALUES ({timestamp}, {degrees_f})
+        """
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+
+    def insert_inside_heat_index(
         self,
         timestamp,
         degrees_f
@@ -161,8 +227,26 @@ class DatabaseClient:
             connection.execute_sql(sql)
         finally:
             connection.wrap_it_up()
-        
-    def insert_humidity(
+
+    def insert_outside_humidity(
+        self,
+        timestamp,
+        percentage
+    ):
+        sql = f"""
+        INSERT INTO OutsideHumidity (Timestamp, Percentage)
+        VALUES ({timestamp}, {percentage})
+        """
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+
+    def insert_inside_humidity(
         self,
         timestamp,
         percentage
@@ -214,10 +298,48 @@ class DatabaseClient:
         finally:
             connection.wrap_it_up()
 
-    def read_temperature(self, min_seconds, max_seconds):
+    def read_outside_temperature(self, min_seconds, max_seconds):
+        sql = """
+        SELECT Timestamp, DegreesF 
+        FROM OutsideTemperature
+        WHERE Timestamp >= {min_seconds} AND Timestamp < {max_seconds} 
+        ORDER BY Timestamp
+        """.format(min_seconds=min_seconds, max_seconds=max_seconds)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
+
+
+    def read_inside_temperature(self, min_seconds, max_seconds):
         sql = """
         SELECT Timestamp, DegreesF 
         FROM Temperature
+        WHERE Timestamp >= {min_seconds} AND Timestamp < {max_seconds} 
+        ORDER BY Timestamp
+        """.format(min_seconds=min_seconds, max_seconds=max_seconds)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
+
+
+    def read_outside_humidity(self, min_seconds, max_seconds):
+        sql = """
+        SELECT Timestamp, Percentage 
+        FROM OutsideHumidity
         WHERE Timestamp >= {min_seconds} AND Timestamp < {max_seconds} 
         """.format(min_seconds=min_seconds, max_seconds=max_seconds)
 
@@ -231,8 +353,8 @@ class DatabaseClient:
 
         return results
 
-    
-    def read_humidity(self, min_seconds, max_seconds):
+
+    def read_inside_humidity(self, min_seconds, max_seconds):
         sql = """
         SELECT Timestamp, Percentage 
         FROM Humidity
@@ -250,11 +372,30 @@ class DatabaseClient:
         return results
 
 
-    def read_heat_index(self, min_seconds, max_seconds):
+    def read_outside_heat_index(self, min_seconds, max_seconds):
+        sql = """
+        SELECT Timestamp, DegreesF 
+        FROM OutsideHeatIndex
+        WHERE Timestamp >= {min_seconds} AND Timestamp < {max_seconds} 
+        """.format(min_seconds=min_seconds, max_seconds=max_seconds)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
+
+
+    def read_inside_heat_index(self, min_seconds, max_seconds):
         sql = """
         SELECT Timestamp, DegreesF 
         FROM HeatIndex
         WHERE Timestamp >= {min_seconds} AND Timestamp < {max_seconds} 
+        ORDER BY Timestamp
         """.format(min_seconds=min_seconds, max_seconds=max_seconds)
 
         connection = ConnectionWrapper(self.database_name)
