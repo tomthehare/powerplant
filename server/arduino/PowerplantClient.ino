@@ -7,10 +7,12 @@
 #include <Adafruit_Sensor.h>
 
 
-#define DHTPIN 2     // what digital pin we're connected to
+#define DHTPIN_INSIDE 2
+#define DHTPIN_OUTSIDE 4
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht_inside(DHTPIN_INSIDE, DHTTYPE);
+DHT dht_outside(DHTPIN_OUTSIDE, DHTTYPE);
 
 #define PIN_WATERVALVE 7
 #define VALVE_COOLDOWN_SECONDS 60
@@ -109,11 +111,15 @@ class TempHumidityTask {
     OneShotScheduler *scheduler;
     TimeCoordinator *tc;
     float lastTempReading;
+    DHT *dht;
+    String tag;
 
   public:
-    TempHumidityTask(OneShotScheduler *scheduler, TimeCoordinator *tc) {
+    TempHumidityTask(OneShotScheduler *scheduler, TimeCoordinator *tc, DHT *dht, String tag) {
       this->scheduler = scheduler;
       this->tc = tc;
+      this->dht = dht;
+      this->tag = tag;
     }
   
     float getLastTempReading() {
@@ -127,10 +133,10 @@ class TempHumidityTask {
     
       // Reading temperature or humidity takes about 250 milliseconds!
       // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-      float h = dht.readHumidity();
+      float h = this->dht->readHumidity();
    
       // Read temperature as Fahrenheit (isFahrenheit = true)
-      float f = dht.readTemperature(true);
+      float f = this->dht->readTemperature(true);
       this->lastTempReading = f;
   
       // Check if any reads failed and exit early (to try again).
@@ -139,11 +145,13 @@ class TempHumidityTask {
       }
   
       // Compute heat index in Fahrenheit (the default)
-      float hif = dht.computeHeatIndex(f, h);
+      float hif = this->dht->computeHeatIndex(f, h);
 
       this->scheduler->markTaskAsRun();
   
-      String str = "&th|";
+      String str = "&th_";
+      str.concat(this->tag);
+      str.concat("|");
       str.concat(this->tc->getCurrentTimeStamp());
       str.concat("|humidity:");
       str.concat(h);
@@ -241,19 +249,22 @@ class ValveOperator {
       // Do the 8am check
       if (currentDay != this->lastDayOffsetRun8 && this->tc->getCurrentHourOffset() == 8) {
         this->openValve();
-	this->lastDayOffsetRun8 = this->tc->getCurrentDayOffset();
+	      this->lastDayOffsetRun8 = this->tc->getCurrentDayOffset();
       }
 
-      if (currentDay != this->lastDayOffsetRun12 && this->tc->getCurrentHourOffset() == 12 && this->tempHumid->getLastTempReading() > 100) {
-        this->openValve();
-	String logString = "Did the 12pm check and determined that it is plenty hot: ";
-        logString.concat(this->tempHumid->getLastTempReading());
-	this->logr->doLog(logString);
+      if (currentDay != this->lastDayOffsetRun12 && this->tc->getCurrentHourOffset() == 12) {
+        
+        if (this->tempHumid->getLastTempReading() > 80) {
+          this->openValve();
+  	      String logString = "Did the 12pm check and determined that it is plenty hot: ";
+          logString.concat(this->tempHumid->getLastTempReading());
+  	      this->logr->doLog(logString);
+        } else {
+          String logString = "Did the 12pm check but determined not hot enough today: ";
+          logString.concat(this->tempHumid->getLastTempReading());
+  	      this->logr->doLog(logString);
+        }
         this->lastDayOffsetRun12 = this->tc->getCurrentDayOffset();
-      } else {
-        String logString = "Did the 12pm check but determined not hot enough today: ";
-        logString.concat(this->tempHumid->getLastTempReading());
-	this->logr->doLog(logString);
       }
     }
 
@@ -277,10 +288,12 @@ class ValveOperator {
 SerialWriter serialWriter;
 TimeCoordinator timeKeeper;
 Logger logr(&serialWriter, &timeKeeper);
-OneShotScheduler tempHumidScheduler(60000);
-TempHumidityTask tempHumidity(&tempHumidScheduler, &timeKeeper);
+OneShotScheduler tempHumidSchedulerInside(60000);
+OneShotScheduler tempHumidSchedulerOutside(60000);
+TempHumidityTask tempHumidityInside(&tempHumidSchedulerInside, &timeKeeper, &dht_inside, "inside");
+TempHumidityTask tempHumidityOutside(&tempHumidSchedulerOutside, &timeKeeper, &dht_outside, "outside");
 OneShotScheduler mainWaterValveScheduler(10000); // evaluate if it should run every n milliseconds, this does not mean it will run, just that it will have a chance to evaluate.
-ValveOperator mainWaterValve(&logr, &timeKeeper, 30, &mainWaterValveScheduler, &tempHumidity);
+ValveOperator mainWaterValve(&logr, &timeKeeper, 50, &mainWaterValveScheduler, &tempHumidityInside);
 
 void setup() {
   Serial.begin(9600);
@@ -288,11 +301,12 @@ void setup() {
   pinMode(PIN_WATERVALVE, OUTPUT); 
 
   // Start(?) the temp/humdity chip
-  dht.begin();
+  dht_inside.begin();
+  dht_outside.begin();
 
   // Solicit the real world time in order to schedule water delivery properly.
   timeKeeper.coordinateRealWorldTime();
-  String logMessage = "Arduino time synced: ";
+  String logMessage = "Hello- the build is build A.  Arduino time synced: ";
   logMessage.concat(String(timeKeeper.getCurrentTimeStamp()));
   logr.doLog(logMessage);
 }
@@ -300,11 +314,18 @@ void setup() {
 void loop() {
   delay(100);
 
-  String tempHumid = tempHumidity.readSensor();
+  String tempHumidInside = tempHumidityInside.readSensor();
 
-  if (tempHumid.length() > 0) {
-    serialWriter.writeString(tempHumid);
+  if (tempHumidInside.length() > 0) {
+    serialWriter.writeString(tempHumidInside);
   }
-  
-  mainWaterValve.evaluateSchedule();
+
+  String tempHumidOutside = tempHumidityOutside.readSensor();
+
+  if (tempHumidOutside.length() > 0) {
+    serialWriter.writeString(tempHumidOutside);
+  }
+
+  // No valve attached, commenting out for now.
+  // mainWaterValve.evaluateSchedule();
 }
