@@ -139,6 +139,17 @@ class DatabaseClient:
             """
             connection.execute_sql(operation_catalog_table_sql)
 
+        if "SoilVoltage" not in tables:
+            soil_voltage_table_sql = """
+            CREATE TABLE SoilVoltage (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Timestamp INTEGER,
+                PlantTag TEXT,
+                Voltage REAL
+            )
+            """
+            connection.execute_sql(soil_voltage_table_sql)
+
         connection.wrap_it_up()
 
     def insert_log(
@@ -289,6 +300,24 @@ class DatabaseClient:
         sql = f"""
         INSERT INTO ValveOperation (Timestamp, ValveId, OperationType)
         VALUES ({timestamp}, {valve_id}, {operation_type})
+        """
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+    def insert_soil_voltage(
+        self,
+        timestamp,
+        plant_tag,
+        soil_voltage
+    ):
+        sql = f"""
+        INSERT INTO SoilVoltage (Timestamp, PlantTag, SoilVoltage)
+        VALUES ({timestamp}, {plant_tag}, {soil_voltage})
         """
 
         connection = ConnectionWrapper(self.database_name)

@@ -187,3 +187,34 @@ def show_summary():
     output = json2html.convert(json_dict)
 
     return output, 200
+
+
+@app.route('/record-soil-conductivity', methods = ['POST'])
+def record_soil_conductivity():
+    data = request.form
+
+    pieces = data.get('data').split('|')
+    
+    unix_timestamp = float(pieces[1]) - get_adjusted_offset_seconds()
+    plant_tag = pieces[2]
+    soil_voltage_reading = pieces[3]
+
+    dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "plant-tag": plant_tag, "soil-voltage": soil_voltage_reading}
+
+    client.insert_soil_voltage(unix_timestamp, plant_tag, soil_voltage_reading))
+
+    print(json.dumps(dict_of_data, indent=4))
+    
+    return jsonify(isError=False, message="Success", statusCode=200), 200
+
+
+@app.route('/plant-thirst/<valve_descriptor>', methods=['GET']):
+def are_plants_thirsty(valve_descriptor):
+    output = {'thirsty': False}
+
+    # Figure out if any plants in the valve group are thirsty
+
+    # Figure out how long it's been since last watering
+
+    return output, 200
+

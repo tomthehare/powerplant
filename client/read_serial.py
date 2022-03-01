@@ -39,19 +39,15 @@ while (True):
         payload_parts = file_payload.split("|")
         payload_identifier = payload_parts[0]
 
-        if payload_identifier == "&th_inside":
+        if payload_identifier == "&sm":
             try:
-              print("sent request")
-              r = requests.post('http://192.168.86.182:5000/temp-humid-inside', data ={'data': file_payload})
+              r = requests.post('http://192.168.86.182:5000/record-soil-conductivity', data ={'data': file_payload})
             except:
-              print('error pushing request to temp-humid-inside endpoint')
-        elif payload_identifier == "&th_outside":
-            try:
-              r = requests.post('http://192.168.86.182:5000/temp-humid-outside', data={'data': file_payload})
-            except:
-              print('error pushing request to temp-humid-outside endpoint')
+              print('error pushing request to soil conductivity endpoint')
         elif payload_identifier == "&log":
             try:
                 r = requests.post('http://192.168.86.182:5000/logging', data ={'data': file_payload})
             except:
                 print('error pushing request to logging endpoint')
+        else:
+            print('hmm no idea what to do with that request!')
