@@ -16,8 +16,8 @@ while (True):
         break
 
     except Exception as ex:
-        print("No serial, will try again soon.")
-        print(ex)
+        print("No serial, will try again soon.", flush=True)
+        print(ex, flush=True)
         time.sleep(5)
 
 
@@ -26,15 +26,15 @@ while (True):
     decoded_bytes = ser_bytes[0:len(ser_bytes)-2].decode("utf-8")
 
     if decoded_bytes == "time-please":
-        print("Negotiating time with arduino...")
+        print("Negotiating time with arduino...", flush=True)
         current_time_adjusted = round(time.time()) + get_adjusted_offset_seconds()
 
-        print("It is " + str(current_time_adjusted))
+        print("It is " + str(current_time_adjusted), flush=True)
         ser.write(bytes(str(current_time_adjusted) + '>', 'ascii'))
     else:
         file_payload = decoded_bytes
 
-        print(file_payload)
+        print(file_payload, flush=True)
 
         payload_parts = file_payload.split("|")
         payload_identifier = payload_parts[0]
@@ -43,11 +43,11 @@ while (True):
             try:
               r = requests.post('http://192.168.86.182:5000/record-soil-conductivity', data ={'data': file_payload})
             except:
-              print('error pushing request to soil conductivity endpoint')
+              print('error pushing request to soil conductivity endpoint', flush=True)
         elif payload_identifier == "&log":
             try:
                 r = requests.post('http://192.168.86.182:5000/logging', data ={'data': file_payload})
             except:
-                print('error pushing request to logging endpoint')
+                print('error pushing request to logging endpoint', flush=True)
         else:
-            print('hmm no idea what to do with that request!')
+            print('hmm no idea what to do with that request!', flush=True)
