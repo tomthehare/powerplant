@@ -201,14 +201,14 @@ def record_soil_conductivity():
 
     dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "plant-tag": plant_tag, "soil-voltage": soil_voltage_reading}
 
-    client.insert_soil_voltage(unix_timestamp, plant_tag, soil_voltage_reading))
+    client.insert_soil_voltage(unix_timestamp, plant_tag, soil_voltage_reading)
 
     print(json.dumps(dict_of_data, indent=4))
     
     return jsonify(isError=False, message="Success", statusCode=200), 200
 
 
-@app.route('/plant-thirst/<valve_descriptor>', methods=['GET']):
+@app.route('/plant-thirst/<valve_descriptor>', methods=['GET'])
 def are_plants_thirsty(valve_descriptor):
     output = {'thirsty': False}
 

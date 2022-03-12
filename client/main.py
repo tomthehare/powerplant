@@ -174,7 +174,8 @@ class WaterPlantTask:
             logging.debug('Valve %s already open', self.valve.description)
             return False
 
-        if self.client.ask_if_plants_needs_water(self.valve.description):
+        # Only water in the 9oclock hour once a day
+        if current_hour() == 9 and (self.last_opened_timestamp() - timestamp()) > 86400:
             return True
 
         return False
@@ -184,6 +185,7 @@ class WaterPlantTask:
             return False
         
         self.valve.open()
+        self.last_opened_timestamp() = timestamp()
         return True
 
 
@@ -248,15 +250,17 @@ tempHumidInside = TempHumidSensor(PIN_TEMP_HUMIDITY_INSIDE)
 tempHumidOutside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
 web_client = WebClient()
 valve = Valve(PIN_VALVE_POWER, 30, 'LimeTree')
+
+
 ########################################
 ########### EXECUTE TASKS ##############
 ########################################
 
 tasks = [
-    TempHumidLogTask(10, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
+    #TempHumidLogTask(10, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
     #TempHumidLogTask(15, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
-    WaterPlantTask(300, valve, web_client),
-    ValveCloseTask(valve),
+    #WaterPlantTask(300, valve, web_client),
+    #ValveCloseTask(valve),
     GrowLightTask('05:00', '19:00', PIN_GROW_LIGHT_POWER),
 ]
 

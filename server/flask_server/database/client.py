@@ -102,6 +102,34 @@ class DatabaseClient:
             """
             connection.execute_sql(valve_insert_sql)
 
+        if "ValveGroup" not in tables:
+            valve_group_table_sql = """
+            CREATE TABLE ValveGroup (
+                GroupID INTEGER PRIMARY KEY AUTOINCREMENT,
+                Description TEXT
+            )
+            """
+            connection.execute_sql(valve_group_table_sql)
+
+        if "JoinPlantValveGroup" not in tables:
+            join_plant_valve_group_sql = """
+            CREATE TABLE JoinPlantValveGroup (
+                GroupID INTEGER,
+                ValveID INTEGER
+            )
+            """
+            connection.execute_sql(join_plant_valve_group_sql)
+
+        if "PlantCatalog" not in tables:
+            plant_catalog_table_sql = """
+            CREATE TABLE PlantCatalog (
+                PlantID INTEGER,
+                Tag TEXT,
+                Description TEXT
+            )
+            """
+            connection.execute_sqll(plant_catalog_table_sql)
+
         if "ValveOperation" not in tables:
             valve_operation_table_sql = """
             CREATE TABLE ValveOperation (
@@ -316,8 +344,8 @@ class DatabaseClient:
         soil_voltage
     ):
         sql = f"""
-        INSERT INTO SoilVoltage (Timestamp, PlantTag, SoilVoltage)
-        VALUES ({timestamp}, {plant_tag}, {soil_voltage})
+        INSERT INTO SoilVoltage (Timestamp, PlantTag, Voltage)
+        VALUES ({timestamp}, '{plant_tag}', {soil_voltage})
         """
 
         connection = ConnectionWrapper(self.database_name)
@@ -454,6 +482,47 @@ class DatabaseClient:
             connection.wrap_it_up()
 
         return results
+
+    def read_most_recent_plant_voltage(self, plant_tag):
+        sql = """
+        SELECT Timestamp, Voltage
+        FROM SoilVoltage 
+        WHERE PlantTag = '{plant_tag}'
+        ORDER BY Timestamp DESC
+        LIMIT 1
+        """.format(plant_tag=plant_tag)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
+
+    def read_last_valve_opening(self, plant_tag):
+        sql = """
+        SELECT ValveOperation.ValveId, Timestamp 
+        FROM ValveOperation
+        INNER JOIN JoinPlantValveGroup ON JoinPlantValveGroup.ValveID = ValveOperation.ValveId
+        INNER JOIN PlantCatalog ON PlantCatalog.PlantID = JoinPlantValveGroup.PlantID
+        WHERE OperationType = 1 AND PlantCatalog.PlantTag = '{plant_tag}'
+        ORDER BY Timestamp DESC
+        LIMIT 1
+        """.format(plant_tag=plant_tag)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
+
 
 class ConnectionWrapper:
 
