@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO
 import logging
 import signal
 import sys
+import os
 import datetime
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -15,9 +16,7 @@ DHT_SENSOR = Adafruit_DHT.DHT22
 PIN_TEMP_HUMIDITY_INSIDE = 4
 PIN_TEMP_HUMIDITY_OUTSIDE = -1 #TODO NUH UH change this to real pin
 PIN_VALVE_POWER = 17
-PIN_SOIL_MOISTURE_POWER = -1
-PIN_SOIL_MOISTURE_DATA = -1
-PIN_GROW_LIGHT_POWER = -1
+PIN_GROW_LIGHT_POWER = 14
 
 SERVER_URL = 'http://192.168.86.182:5000'
 URL_TEMP_HUMID_INSIDE = '/temp-humid-inside'
@@ -27,10 +26,10 @@ def timestamp():
     return round(time.time())
 
 def current_hour():
-    return datetime.now().hour
+    return datetime.datetime.now().hour
 
 def current_minute():
-    return datetime.now().minute
+    return datetime.datetime.now().minute
 
 class TempHumidReading:
     def __init__(self, temp, humid):
@@ -63,7 +62,7 @@ class WebClient:
         url = SERVER_URL + '/plant-thirst/' + descriptor
         response = requests.get(url)
 
-        if response.status_code <> 200:
+        if response.status_code != 200:
             logging.error(str(response.status_code) + ' status code was received from ' + url)
             return False
 
@@ -190,15 +189,15 @@ class WaterPlantTask:
 
 
 class GrowLightTask:
-    def __init__(self, time_on: str, time_off: str, POWER_PIN: int):
+    def __init__(self, time_on: str, time_off: str, power_pin: int):
         time_on_pieces = time_on.split(':')
         time_off_pieces = time_off.split(':')
 
-        self.time_on_hour = time_on_pieces[0]
-        self.time_on_minute = time_on_pieces[1]
+        self.time_on_hour = int(time_on_pieces[0])
+        self.time_on_minute = int(time_on_pieces[1])
 
-        self.time_off_hour = time_off_pieces[0]
-        self.time_off_minute = time_off_pieces[1]
+        self.time_off_hour = int(time_off_pieces[0])
+        self.time_off_minute = int(time_off_pieces[1])
 
         self.light_on = False
         self.power_pin = power_pin
@@ -206,28 +205,32 @@ class GrowLightTask:
         GPIO.setup(self.power_pin, GPIO.OUT)
         GPIO.output(self.power_pin, GPIO.HIGH)
 
+        logging.debug("Light set to turn on at %d:%d and turn off at %d:%d" % (self.time_on_hour, self.time_on_minute, self.time_off_hour, self.time_off_minute))
 
-    def should_be_on():
-        if self.time_on_hour < current_hour() and self.time_on_minute < current_minute() and self.time_off_hour > current_hour() and self.time_off_minute > current_minute():
-            return True
+    def should_be_on(self):
+        turn_on_min_timestamp = (self.time_on_hour * 60) + self.time_on_minute
+        turn_off_min_timestamp = (self.time_off_hour * 60) + self.time_off_minute
+        now_min_timestamp = (current_hour() * 60) + current_minute()
 
-        return False
+        return turn_on_min_timestamp <= now_min_timestamp and now_min_timestamp < turn_off_min_timestamp
 
-    def should_be_off():
+    def should_be_off(self):
         return not self.should_be_on()
 
-    def turn_off_light():
+    def turn_off_light(self):
         GPIO.output(self.power_pin, GPIO.HIGH)
         self.light_on = False
+        logging.debug("turned off the grow lights")
 
-    def turn_on_light():
+    def turn_on_light(self):
         GPIO.output(self.power_pin, GPIO.LOW)
         self.light_on = True
+        logging.debug("turned on the grow lights")
 
-    def run():
+    def run(self):
         if self.light_on and self.should_be_off():
             self.turn_off_light()
-        elif self.light_off and self.should_be_on():
+        elif not self.light_on and self.should_be_on():
             self.turn_on_light()
 
 
@@ -269,8 +272,12 @@ while True:
         try:
             task.run();
         except Exception as e:
-            print(e)
-    
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            logging.error(e)
+            print(exc_type, fname, exc_tb.tb_lineno) 
+
+
     time.sleep(5);
 
 GPIO.cleanup()
