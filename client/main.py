@@ -250,16 +250,18 @@ GPIO.setmode(GPIO.BCM)
 tempHumidInside = TempHumidSensor(PIN_TEMP_HUMIDITY_INSIDE)
 tempHumidOutside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
 web_client = WebClient()
-valve = Valve(PIN_VALVE_POWER, 30, 'LimeTree')
+valve = Valve(PIN_VALVE_POWER, 90, 'LimeTree')
 ########################################
 ########### EXECUTE TASKS ##############
 ########################################
+
+valve.open()
 
 tasks = [
     #TempHumidLogTask(10, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
     #TempHumidLogTask(15, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
     #WaterPlantTask(300, valve, web_client),
-    #ValveCloseTask(valve),
+    ValveCloseTask(valve),
     GrowLightTask('05:00', '19:00', PIN_GROW_LIGHT_POWER),
 ]
 
