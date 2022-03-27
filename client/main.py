@@ -184,7 +184,7 @@ class WaterPlantTask:
             return False
         
         self.valve.open()
-        self.last_opened_timestamp() = timestamp()
+        self.last_opened_timestamp = timestamp()
         return True
 
 
