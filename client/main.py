@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(m
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
-PIN_TEMP_HUMIDITY_INSIDE = 4
-PIN_TEMP_HUMIDITY_OUTSIDE = -1 #TODO NUH UH change this to real pin
+PIN_TEMP_HUMIDITY_INSIDE = 18
+PIN_TEMP_HUMIDITY_OUTSIDE = 15
 PIN_VALVE_POWER = 17
 PIN_GROW_LIGHT_POWER = 14
 
@@ -55,8 +55,8 @@ class WebClient:
 
     def send_temp_humidity_reading(self, reading: TempHumidReading, url: str):
         data = self.format_temp_humidity_data_string(reading)
-        logging.debug('sent web request: %s -> %s', url, data)
-        #r = requests.post(url, data ={'data': data})
+#        logging.debug('sent web request: %s -> %s', url, data)
+        r = requests.post(url, data ={'data': data})
 
     def ask_if_plants_need_water(self, descriptor: str) -> bool:
         url = SERVER_URL + '/plant-thirst/' + descriptor
@@ -258,14 +258,12 @@ valve = Valve(PIN_VALVE_POWER, 90, 'LimeTree')
 ########### EXECUTE TASKS ##############
 ########################################
 
-valve.open()
-
 tasks = [
-    #TempHumidLogTask(10, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
-    #TempHumidLogTask(15, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
+    TempHumidLogTask(300, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
+    TempHumidLogTask(300, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
     #WaterPlantTask(300, valve, web_client),
-    ValveCloseTask(valve),
-    GrowLightTask('05:00', '19:00', PIN_GROW_LIGHT_POWER),
+    #ValveCloseTask(valve),
+    #GrowLightTask('05:00', '19:00', PIN_GROW_LIGHT_POWER),
 ]
 
 while True:
