@@ -87,20 +87,6 @@ def logging():
     
   return jsonify(isError=False, message="Success", statusCode=200), 200
 
-@app.route('/temp-humid-outside', methods = ['POST'])
-def persist_temp_and_humid_outside():
-  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_data(request.form))
-
-  dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
-
-  client.insert_outside_temperature(unix_timestamp, temp_value)
-  client.insert_outside_humidity(unix_timestamp, humidity_value)
-  client.insert_outside_heat_index(unix_timestamp, heat_index_value)
-
-  print(json.dumps(dict_of_data, indent=4))
-    
-  return jsonify(isError=False, message="Success", statusCode=200), 200
-
 
 def parse_humid_temp(data):
   pieces = data.get("data").split("|")
@@ -121,9 +107,25 @@ def parse_humid_temp(data):
 
   return (unix_timestamp, temp_value, humidity_value, heat_index_value)
 
+
+@app.route('/temp-humid-outside', methods = ['POST'])
+def persist_temp_and_humid_outside():
+  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_temp(request.form)
+
+  dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
+
+  client.insert_outside_temperature(unix_timestamp, temp_value)
+  client.insert_outside_humidity(unix_timestamp, humidity_value)
+  client.insert_outside_heat_index(unix_timestamp, heat_index_value)
+
+  print(json.dumps(dict_of_data, indent=4))
+    
+  return jsonify(isError=False, message="Success", statusCode=200), 200
+
+
 @app.route('/temp-humid-inside', methods = ['POST'])
 def persist_temp_and_humid_inside(): 
-  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_data(request.form))
+  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_temp(request.form)
 
   dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
 
