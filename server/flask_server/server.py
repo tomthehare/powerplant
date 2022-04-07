@@ -5,13 +5,14 @@ import json
 from json2html import *
 from database.client import DatabaseClient
 import pytz
-from time_helper import format_timestamp_as_local
+from time_helper import format_timestamp_as_local, timestamp
 from graph_helper import GraphHelper
+import logging
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
 graph_helper = GraphHelper(client)
-
+_logger = logging.getLogger(__name__)
 
 def get_adjusted_offset_seconds():
     now = datetime.now(pytz.timezone('America/New_York'))
@@ -159,12 +160,17 @@ def show_summary():
     inside_temps = client.read_inside_temperature(now - 300, now)
     inside_humids = client.read_inside_humidity(now - 300, now)
     inside_heat_indexes = client.read_inside_heat_index(now - 300, now)
+
+    _logger.info('inside_temps: ' + json.dumps(inside_temps, indent=2))
     
     outside_temps = client.read_outside_temperature(now - 300, now)
     outside_humids = client.read_outside_humidity(now - 300, now)
     outside_heat_indexes = client.read_outside_heat_index(now - 300, now)
 
     output_dict = {}
+
+    if len(outside_temps) == 0 or len(inside_temps) == 0:
+        return 'error: no temperatures on file', 500
     
     inside_most_recent_temp = inside_temps[len(inside_temps)-1]
     inside_most_recent_humid = inside_humids[len(inside_humids)-1]
@@ -207,14 +213,16 @@ def record_soil_conductivity():
     
     return jsonify(isError=False, message="Success", statusCode=200), 200
 
+@app.route('/plant-group-thirst/{descriptor}', methods=['GET'])
+def get_plant_group_thirst(descriptor):
+    needs_water = False
 
-@app.route('/plant-thirst/<valve_descriptor>', methods=['GET'])
-def are_plants_thirsty(valve_descriptor):
-    output = {'thirsty': False}
+    # Get plant group details
+    thirst_threshold, last_reading, last_water_timestamp = client.get_plant_group_details(descriptor)
 
-    # Figure out if any plants in the valve group are thirsty
+    # If its been over three hours and is reporting being hungry
+    if last_reading > thirst_threshold and (time_helper.timestamp() - last_water_timestamp) > (60 * 60 * 3):
+        needs_water = True
 
-    # Figure out how long it's been since last watering
-
-    return output, 200
+    return  jsonify({'needs_water': needs_water}), 200
 
