@@ -128,7 +128,7 @@ class DatabaseClient:
                 Description TEXT
             )
             """
-            connection.execute_sqll(plant_catalog_table_sql)
+            connection.execute_sql(plant_catalog_table_sql)
 
         if "ValveOperation" not in tables:
             valve_operation_table_sql = """
