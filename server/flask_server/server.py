@@ -88,30 +88,11 @@ def logging():
   return jsonify(isError=False, message="Success", statusCode=200), 200
 
 @app.route('/temp-humid-outside', methods = ['POST'])
-def persist_temp_and_humid_outside(): 
-  data = request.form
-
-  pieces = data.get("data").split("|")
-  
-  unix_timestamp = float(pieces[1]) - get_adjusted_offset_seconds()
-  humidity_string = pieces[2]
-  temp_string = pieces[3]
-  heat_index = pieces[4]
-
-  humidity_pieces = humidity_string.split(":")
-  humidity_value = humidity_pieces[1]
-
-  temp_pieces = temp_string.split(":")
-  temp_value = temp_pieces[1]
-
-  heat_index_pieces = heat_index.split(":")
-  heat_index_value = heat_index_pieces[1]
+def persist_temp_and_humid_outside():
+  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_data(request.form))
 
   dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
 
-  # the_real_string = ','.join([str(unix_timestamp), humidity_value, temp_value, heat_index_value])
- 
-  # write_to_file("temp_humidity_", the_real_string)
   client.insert_outside_temperature(unix_timestamp, temp_value)
   client.insert_outside_humidity(unix_timestamp, humidity_value)
   client.insert_outside_heat_index(unix_timestamp, heat_index_value)
@@ -121,13 +102,10 @@ def persist_temp_and_humid_outside():
   return jsonify(isError=False, message="Success", statusCode=200), 200
 
 
-@app.route('/temp-humid-inside', methods = ['POST'])
-def persist_temp_and_humid_inside(): 
-  data = request.form
-
+def parse_humid_temp(data):
   pieces = data.get("data").split("|")
   
-  unix_timestamp = float(pieces[1]) - get_adjusted_offset_seconds()
+  unix_timestamp = float(pieces[1])
   humidity_string = pieces[2]
   temp_string = pieces[3]
   heat_index = pieces[4]
@@ -141,11 +119,14 @@ def persist_temp_and_humid_inside():
   heat_index_pieces = heat_index.split(":")
   heat_index_value = heat_index_pieces[1]
 
+  return (unix_timestamp, temp_value, humidity_value, heat_index_value)
+
+@app.route('/temp-humid-inside', methods = ['POST'])
+def persist_temp_and_humid_inside(): 
+  (unix_timestamp, temp_value, humidity_value, heat_index_value) = parse_humid_data(request.form))
+
   dict_of_data = {"timestamp": format_timestamp_as_local(unix_timestamp), "humidity": humidity_value, "temp": temp_value, "heat-index": heat_index_value}
 
-  # the_real_string = ','.join([str(unix_timestamp), humidity_value, temp_value, heat_index_value])
- 
-  # write_to_file("temp_humidity_", the_real_string)
   client.insert_inside_temperature(unix_timestamp, temp_value)
   client.insert_inside_humidity(unix_timestamp, humidity_value)
   client.insert_inside_heat_index(unix_timestamp, heat_index_value)

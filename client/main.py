@@ -55,7 +55,7 @@ class WebClient:
 
     def send_temp_humidity_reading(self, reading: TempHumidReading, url: str):
         data = self.format_temp_humidity_data_string(reading)
-#        logging.debug('sent web request: %s -> %s', url, data)
+        logging.debug('sent web request: %s -> %s', url, data)
         r = requests.post(url, data ={'data': data})
 
     def ask_if_plants_need_water(self, descriptor: str) -> bool:
