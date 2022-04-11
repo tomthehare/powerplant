@@ -12,7 +12,14 @@ import logging
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
 graph_helper = GraphHelper(client)
-_logger = logging.getLogger(__name__)
+
+_logger = logging.getLogger('powerplant')
+logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s")
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logFormatter)
+_logger.setLevel(logging.DEBUG)
+_logger.addHandler(handler)
+
 
 def get_adjusted_offset_seconds():
     now = datetime.now(pytz.timezone('America/New_York'))
@@ -23,23 +30,19 @@ def get_adjusted_offset_seconds():
 def ensure_db_exists():
     client.create_tables_if_not_exist()
 
-def write_to_file(filename_prefix: str, data_string: str):
-  dateTimeObj = datetime.now()
-  dateStr = dateTimeObj.strftime("%Y-%m-%d")
-    
-  file = open("./gh_data/" + filename_prefix + dateStr + ".txt", "a")
-  file.write(data_string + '\n')
-  file.close()
-
 
 @app.route('/')
 def hello():
-  return 'hey there fella ' + str(get_adjusted_offset_seconds())
+    _logger.info('Hey there!')
+    return 'hey there fella ' + str(get_adjusted_offset_seconds())
 
 
 @app.route('/scatter', methods=['GET'])
 def scatter():
-    date_start = round(time.time() - 86700)
+    hours_back = request.args.get("hours_back", default=24, type=int)
+    _logger.info("hours back was %d" % hours_back)
+
+    date_start = round(time.time() - (3600 * hours_back))
     date_end = round(time.time())
     
     plot_object = graph_helper.get_temperature(date_start, date_end)
@@ -50,6 +53,7 @@ def scatter():
         date_end=format_timestamp_as_local(date_end),
         plot1=plot_object
     )
+
 
 @app.route('/cpu-temp', methods = ['POST'])
 def cpu_temp():  
@@ -77,7 +81,7 @@ def logging():
   
   print(str(pieces))
   
-  timestamp = float(pieces[1]) - get_adjusted_offset_seconds() 
+  timestamp = float(pieces[1])
   log_text = pieces[2]
  
   # write_to_file("logging_", data.get("data"))
@@ -142,13 +146,9 @@ def show_summary():
     now = round(time.time())
     inside_temps = client.read_inside_temperature(now - 300, now)
     inside_humids = client.read_inside_humidity(now - 300, now)
-    inside_heat_indexes = client.read_inside_heat_index(now - 300, now)
 
-    _logger.info('inside_temps: ' + json.dumps(inside_temps, indent=2))
-    
     outside_temps = client.read_outside_temperature(now - 300, now)
     outside_humids = client.read_outside_humidity(now - 300, now)
-    outside_heat_indexes = client.read_outside_heat_index(now - 300, now)
 
     output_dict = {}
 
@@ -157,19 +157,15 @@ def show_summary():
     
     inside_most_recent_temp = inside_temps[len(inside_temps)-1]
     inside_most_recent_humid = inside_humids[len(inside_humids)-1]
-    inside_most_recent_heat_index = inside_heat_indexes[len(inside_heat_indexes)-1]
 
     outside_most_recent_temp = outside_temps[len(outside_temps)-1]
     outside_most_recent_humid = outside_humids[len(outside_humids)-1]
-    outside_most_recent_heat_index = outside_heat_indexes[len(outside_heat_indexes)-1]
 
-    output_dict['inside-temperature'] = {'Time': format_timestamp_as_local(inside_most_recent_temp[0]), 'InsideDegreesF': inside_most_recent_temp[1]}
-    output_dict['inside-humidity'] = {'Time': format_timestamp_as_local(inside_most_recent_humid[0]), 'InsidePercentage': inside_most_recent_humid[1]}
-    output_dict['inside-heat-index'] = {'Time': format_timestamp_as_local(inside_most_recent_heat_index[0]), 'InsideDegreesF-HI': inside_most_recent_heat_index[1]}
+    output_dict['Inside Temperature'] = {'Time': format_timestamp_as_local(inside_most_recent_temp[0]), 'InsideDegreesF': inside_most_recent_temp[1]}
+    output_dict['Inside Humidity'] = {'Time': format_timestamp_as_local(inside_most_recent_humid[0]), 'InsidePercentage': inside_most_recent_humid[1]}
 
-    output_dict['outside-temperature'] = {'Time': format_timestamp_as_local(outside_most_recent_temp[0]), 'OutsideDegreesF': outside_most_recent_temp[1]}
-    output_dict['outside-humidity'] = {'Time': format_timestamp_as_local(outside_most_recent_humid[0]), 'OutsidePercentage': outside_most_recent_humid[1]}
-    output_dict['outside-heat-index'] = {'Time': format_timestamp_as_local(outside_most_recent_heat_index[0]), 'OutsideDegreesF-HI': outside_most_recent_heat_index[1]}
+    output_dict['Outside Temperature'] = {'Time': format_timestamp_as_local(outside_most_recent_temp[0]), 'OutsideDegreesF': outside_most_recent_temp[1]}
+    output_dict['Outside Humidity'] = {'Time': format_timestamp_as_local(outside_most_recent_humid[0]), 'OutsidePercentage': outside_most_recent_humid[1]}
 
     json_dict = json.dumps(output_dict)
 
@@ -184,7 +180,7 @@ def record_soil_conductivity():
 
     pieces = data.get('data').split('|')
     
-    unix_timestamp = float(pieces[1]) - get_adjusted_offset_seconds()
+    unix_timestamp = float(pieces[1])
     plant_tag = pieces[2]
     soil_voltage_reading = pieces[3]
 

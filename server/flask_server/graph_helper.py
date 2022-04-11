@@ -42,20 +42,43 @@ class GraphHelper:
             total = total + temp
         
         return total / len(temp_set)
+
+    def snap_to_5_min_buckets(self, ts_start, ts_end, data):
+        starting_number = ts_start - (ts_start % 300)
+
+        the_range = range(starting_number, ts_end, 300)
+        the_dict = {}
+        for number in the_range:
+            the_dict[number] = []
+
+        for ts, temp in data:
+            the_dict[ts - (ts % 300)].append(temp)
+
+        for key in the_dict.keys():
+            if len(the_dict[key]) > 0:
+                the_dict[key] = self._get_avg_for_temp_set(the_dict[key])
+            else:
+                the_dict[key] = None
+
+        return the_dict
+
                 
 
     def get_temperature(self, timestamp_start, timestamp_end):
         inside_data_array = self.database_client.read_inside_temperature(timestamp_start, timestamp_end)
         outside_data_array = self.database_client.read_outside_temperature(timestamp_start, timestamp_end)
 
-        inside_data_array = self._aggregate_to_minutes(inside_data_array)
-        outside_data_array = self._aggregate_to_minutes(outside_data_array)
+        snapped_inside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, inside_data_array)
+        snapped_outside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, outside_data_array)
 
-        inside_dates = [format_timestamp_as_hour_time(a_tuple[0]) for a_tuple in inside_data_array]
-        inside_temperatures = [a_tuple[1] for a_tuple in inside_data_array]
+        inside_dates = list(snapped_inside.keys())
+        inside_temperatures = list(snapped_inside.values())
 
-        outside_dates = [format_timestamp_as_hour_time(a_tuple[0]) for a_tuple in outside_data_array]
-        outside_temperatures = [a_tuple[1] for a_tuple in outside_data_array]
+        outside_dates = list(snapped_outside.keys())
+        outside_temperatures = list(snapped_outside.values())
+
+        inside_dates = [format_timestamp_as_hour_time(ts) for ts in inside_dates]
+        outside_dates = [format_timestamp_as_hour_time(ts) for ts in outside_dates]
 
         response = []
 
