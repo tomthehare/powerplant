@@ -31,6 +31,61 @@ def current_hour():
 def current_minute():
     return datetime.datetime.now().minute
 
+class ValveConfig:
+
+    def __init__(self, id, description, conductivity_threshold, watering_delay_seconds):
+        self.id = id
+        self.description = description
+        self.conductivity_threshold = conductivity_threshold
+        self.watering_delay_seconds = watering_delay_seconds
+
+
+class Config:
+
+    def __init__(self, input_config):
+        self.valves = {}
+
+    def update_config(self, input_config):
+        for valve_config in input_config['valves']:
+            valve_id = valve_config['id']
+            if valve_id not in self.valves.keys():
+                self.valves[valve_id] = {}
+
+            self.valves[valve_id]['description'] = valve_config['description']
+            self.valves[valve_id]['conductivity_threshold'] = valve_config['conductivity_threshold']
+            self.valves[valve_id]['watering_delay_seconds'] = valve_config['watering_delay_seconds']
+
+        """
+        {
+            "valves":  [
+                {
+                    "id": 1,
+                    "description": "LIMES",
+                    "last_opened_ts": 2811818181,
+                    "conductivity_threshold": 0.6,
+                    "watering_delay_seconds": 3600
+                }
+            ]
+        }
+        """
+
+
+class ConfigSyncTask:
+    def __init__(self, run_every_seconds: int, web_client: WebClient, config: Config):
+        self.run_every_seconds = run_every_seconds
+        self.last_run_ts = 0
+        self.url = url
+        self.web_client = web_client
+        self.config = config
+
+    def should_run(self):
+        return timestamp() > (self.last_run_ts + self.run_every_seconds)
+
+    def run(self):
+        new_config = self.web_client.read_config()
+        self.config.update_config(new_config)
+
+
 class TempHumidReading:
     def __init__(self, temp, humid):
         self.temp_c = temp
@@ -69,6 +124,12 @@ class WebClient:
         body = response.json()
 
         return body['thirsty']
+
+    def read_config(self):
+        url = SERVER_URL + '/config'
+        r = requests.get(url)
+
+        return r.json()
 
 
 class TempHumidSensor:
