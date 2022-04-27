@@ -15,12 +15,25 @@ DHT_SENSOR = Adafruit_DHT.DHT22
 
 PIN_TEMP_HUMIDITY_INSIDE = 18
 PIN_TEMP_HUMIDITY_OUTSIDE = 15
-PIN_VALVE_POWER = 17
-PIN_GROW_LIGHT_POWER = 14
+PIN_VALVE_1_POWER = 17
+PIN_VALVE_2_POWER = -1
+PIN_VALVE_3_POWER = -1
+PIN_VALVE_4_POWER = -1
+PIN_VALVE_5_POWER = -1
+PIN_VALVE_6_POWER = -1
+PIN_VALVE_7_POWER = -1
+PIN_VALVE_8_POWER = -1
+PIN_VALVE_9_POWER = -1
+
+PIN_GROW_LIGHT_POWER = -1
 
 SERVER_URL = 'http://192.168.86.182:5000'
 URL_TEMP_HUMID_INSIDE = '/temp-humid-inside'
 URL_TEMP_HUMID_OUTSIDE = '/temp-humid-outside'
+
+FIVE_MINUTES = 300
+TEN_MINUTES = 600
+FIFTEEN_MINUTES = 900
 
 def timestamp():
     return round(time.time())
@@ -30,78 +43,6 @@ def current_hour():
 
 def current_minute():
     return datetime.datetime.now().minute
-
-class ValveConfig:
-
-    def __init__(self, id, description, conductivity_threshold, watering_delay_seconds):
-        self.id = id
-        self.description = description
-        self.conductivity_threshold = conductivity_threshold
-        self.watering_delay_seconds = watering_delay_seconds
-
-
-class Config:
-
-    def __init__(self, input_config):
-        self.valves = {}
-
-    def update_config(self, input_config):
-        for valve_config in input_config['valves']:
-            valve_id = valve_config['id']
-            if valve_id not in self.valves.keys():
-                self.valves[valve_id] = {}
-
-            self.valves[valve_id]['description'] = valve_config['description']
-            self.valves[valve_id]['conductivity_threshold'] = valve_config['conductivity_threshold']
-            self.valves[valve_id]['watering_delay_seconds'] = valve_config['watering_delay_seconds']
-
-        """
-        {
-            "valves":  [
-                {
-                    "id": 1,
-                    "description": "LIMES",
-                    "last_opened_ts": 2811818181,
-                    "conductivity_threshold": 0.6,
-                    "watering_delay_seconds": 3600
-                }
-            ]
-        }
-        """
-
-
-class ConfigSyncTask:
-    def __init__(self, run_every_seconds: int, web_client: WebClient, config: Config):
-        self.run_every_seconds = run_every_seconds
-        self.last_run_ts = 0
-        self.url = url
-        self.web_client = web_client
-        self.config = config
-
-    def should_run(self):
-        return timestamp() > (self.last_run_ts + self.run_every_seconds)
-
-    def run(self):
-        new_config = self.web_client.read_config()
-        self.config.update_config(new_config)
-
-
-class TempHumidReading:
-    def __init__(self, temp, humid):
-        self.temp_c = temp
-        self.humid = humid
-
-    def get_temp(self):
-        return round((9 * self.temp_c) / 5 + 32, 1)
-
-    def get_temperature(self):
-        return self.get_temp()
-
-    def get_humidity(self):
-        return round(self.humid, 1)
-
-    def get_heat_index(self):
-        return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
 
 
 class WebClient:
@@ -125,11 +66,108 @@ class WebClient:
 
         return body['thirsty']
 
-    def read_config(self):
-        url = SERVER_URL + '/config'
+    def read_valve_config(self):
+        url = SERVER_URL + '/valve-config'
         r = requests.get(url)
 
         return r.json()
+
+
+class ValveConfig:
+
+    def __init__(self, id, description, conductivity_threshold, watering_delay_seconds, open_duration_seconds):
+        self.id = id
+        self.description = description
+        self.conductivity_threshold = conductivity_threshold
+        self.watering_delay_seconds = watering_delay_seconds
+        self.open_duration_seconds = open_duration_seconds
+
+
+class Config:
+
+    def __init__(self):
+        self.valves = {}
+
+    def update_config(self, input_config):
+        for valve_config in input_config['valves']:
+            valve_id = valve_config['id']
+            if valve_id not in self.valves.keys():
+                self.valves[valve_id] = ValveConfig()
+
+            self.valves[valve_id].description = valve_config['description']
+            self.valves[valve_id].conductivity_threshold = valve_config['conductivity_threshold']
+            self.valves[valve_id].watering_delay_seconds = valve_config['watering_delay_seconds']
+            self.valves[valve_id].open_duration_seconds = valve_config['open_duration_seconds']
+
+        """
+        example:
+
+        {
+            "valves":  [
+                {
+                    "id": 1,
+                    "description": "LIMES",
+                    "conductivity_threshold": 0.6,
+                    "watering_delay_seconds": 3600,
+                    "open_duration_seconds": 30
+                }
+            ]
+        }
+        """
+
+
+class ConfigSyncTask:
+    def __init__(self, run_every_seconds, web_client: WebClient, config: Config):
+        self.run_every_seconds = run_every_seconds
+        self.last_run_ts = 0
+        self.url = url
+        self.web_client = web_client
+        self.config = config
+
+    def should_run(self):
+        return timestamp() > (self.last_run_ts + self.run_every_seconds)
+
+    def run(self):
+        new_config = self.web_client.read_config()
+        logger.info('Got new valve config: ' + json.dumps(new_config)
+        self.config.update_config(new_config)
+
+class ValveLock:
+    def __init__(self):
+        self.locked_in_id = -1
+
+    def acquire_lock(self, valve_id):
+        if self.locked_in_id < 0:
+            self.locked_in_id = valve_id
+            return True
+        
+        return False
+
+    def release_lock(self, valve_id):
+        if self.locked_in_id == valve_id:
+            self.locked_in_id = -1
+            return True
+        else:
+            logger.warning('Valve %d not owning the lock asked for a release of the lock')
+            return False
+
+
+class TempHumidReading:
+    def __init__(self, temp, humid):
+        self.temp_c = temp
+        self.humid = humid
+
+    def get_temp(self):
+        return round((9 * self.temp_c) / 5 + 32, 1)
+
+    def get_temperature(self):
+        return self.get_temp()
+
+    def get_humidity(self):
+        return round(self.humid, 1)
+
+    def get_heat_index(self):
+        return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
 
 
 class TempHumidSensor:
@@ -181,31 +219,34 @@ class TempHumidLogTask:
         return True
 
 class Valve:
-    def __init__(self, signal_pin, open_duration, description: str):
+    def __init__(self, valve_id, signal_pin, valve_config):
         self.last_opened_time = 0
-        self.open_duration = open_duration
+        self.id = valve_id
         self.is_open = False
         self.signal_pin = signal_pin
-        self.description = description
-        logging.debug('Setting up valve on pin %d', self.signal_pin)
+        self.valve_config = valve_config
+        logging.debug('Setting up %s valve on pin %d', self.get_description(), self.signal_pin)
 
         GPIO.setup(self.signal_pin, GPIO.OUT)
         GPIO.output(self.signal_pin, GPIO.HIGH)
+
+    def get_description(self):
+        return self.valve_config.description
 
     def open(self):
         GPIO.output(self.signal_pin, GPIO.LOW)
         self.is_open = True
         self.last_opened_time = timestamp()
-        logging.info('Valve on pin %d opened', self.signal_pin)
+        logging.info('Valve for %s opened', self.get_description())
 
     def close(self):
         GPIO.output(self.signal_pin, GPIO.HIGH)
         self.is_open = False
-        logging.info('Valve on pin %d closed', self.signal_pin)
+        logging.info('Valve for %s closed', self.get_description())
 
 
 class ValveCloseTask:
-    def __init__(self, valve: Valve):
+    def __init__(self, valve: Valve, valve_lock: ValveLock):
         self.valve = valve
 
     def run(self):
@@ -216,8 +257,9 @@ class ValveCloseTask:
         return False
 
 class WaterPlantTask:
-    def __init__(self, run_every_seconds, valve: Valve, client: WebClient):
+    def __init__(self, run_every_seconds, valve: Valve, valve_lock: ValveLock):
         self.valve = valve
+        self.valve_lock = va
         self.last_opened_timestamp = 0
         self.run_every_seconds = run_every_seconds
         self.last_evaluated_timestamp = 0
@@ -313,18 +355,42 @@ GPIO.setmode(GPIO.BCM)
 tempHumidInside = TempHumidSensor(PIN_TEMP_HUMIDITY_INSIDE)
 tempHumidOutside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
 web_client = WebClient()
-valve = Valve(PIN_VALVE_POWER, 90, 'LimeTree')
+
+config = Config()
+
+config_sync_task = ConfigSyncTask(FIFTEEN_MINUTES, web_client, config)
+
+# Grab initial settings for valves
+config_sync_task.run()
+
+valve_lock = ValveLock()
+valve_1 = Valve(PIN_VALVE_1_POWER, config.get_valve_config(1), valve_lock)
+valve_2 = Valve(PIN_VALVE_2_POWER, config.get_valve_config(2), valve_lock)
+valve_3 = Valve(PIN_VALVE_3_POWER, config.get_valve_config(3), valve_lock)
+valve_7 = Valve(PIN_VALVE_7_POWER, config.get_valve_config(7), valve_lock)
+valve_8 = Valve(PIN_VALVE_8_POWER, config.get_valve_config(8), valve_lock)
+valve_9 = Valve(PIN_VALVE_9_POWER, config.get_valve_config(9), valve_lock)
 
 ########################################
 ########### EXECUTE TASKS ##############
 ########################################
 
 tasks = [
-    TempHumidLogTask(300, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
-    TempHumidLogTask(300, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
-    #WaterPlantTask(300, valve, web_client),
-    #ValveCloseTask(valve),
-    #GrowLightTask('05:00', '19:00', PIN_GROW_LIGHT_POWER),
+    config_sync_task,
+    TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
+    TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_1, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_2, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_3, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_7, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_8, web_client),
+    WaterPlantTask(TEN_MINUTES, valve_9, web_client),
+    ValveCloseTask(valve_1),
+    ValveCloseTask(valve_2),
+    ValveCloseTask(valve_3),
+    ValveCloseTask(valve_7),
+    ValveCloseTask(valve_8),
+    ValveCloseTask(valve_9),
 ]
 
 while True:
@@ -341,3 +407,5 @@ while True:
     time.sleep(5);
 
 GPIO.cleanup()
+
+# End!

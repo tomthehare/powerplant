@@ -92,33 +92,25 @@ class DatabaseClient:
             valve_catalog_table_sql = """
             CREATE TABLE ValveCatalog (
                 ValveId INTEGER PRIMARY KEY,
-                Description TEXT
+                Description TEXT,
+                ConductivityThreshold REAL,
+                WateringDelaySeconds INTEGER,
+                OpenDurationSeconds INTEGER
             )
             """
             connection.execute_sql(valve_catalog_table_sql)
             
-            valve_insert_sql = """
-            INSERT INTO ValveCatalog (ValveID, Description) VALUES (1, 'Initial experiment valve 2021')
-            """
-            connection.execute_sql(valve_insert_sql)
-
-        if "ValveGroup" not in tables:
-            valve_group_table_sql = """
-            CREATE TABLE ValveGroup (
-                GroupID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Description TEXT
-            )
-            """
-            connection.execute_sql(valve_group_table_sql)
-
-        if "JoinPlantValveGroup" not in tables:
-            join_plant_valve_group_sql = """
-            CREATE TABLE JoinPlantValveGroup (
-                GroupID INTEGER,
-                ValveID INTEGER
-            )
-            """
-            connection.execute_sql(join_plant_valve_group_sql)
+            valve_insert_sql = [
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (1, 'Valve1', 0.3, 900, 45);", 
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (2, 'Valve2', 0.3, 900, 45);",
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (3, 'Valve3', 0.3, 900, 45);",
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (7, 'Valve7', 0.3, 900, 45);",
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (8, 'Valve8', 0.3, 900, 45);",
+                    "INSERT INTO ValveCatalog (ValveID, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds) VALUES (9, 'Valve9', 0.3, 900, 45);"
+            ]
+            
+            for sql in valve_insert_sql:            
+                connection.execute_sql(sql)
 
         if "PlantCatalog" not in tables:
             plant_catalog_table_sql = """
@@ -189,7 +181,7 @@ class DatabaseClient:
         INSERT INTO Logs (Timestamp, LogText)
         VALUES ({timestamp}, '{log_text}')
         """
-
+        
         connection = ConnectionWrapper(self.database_name)
 
         try:
@@ -522,6 +514,37 @@ class DatabaseClient:
             connection.wrap_it_up()
 
         return results
+
+    def get_valve_config(self):
+        sql = """
+        SELECT ValveId, Description, ConductivityThreshold, WateringDelaySeconds, OpenDurationSeconds
+        FROM ValveCatalog
+        ORDER BY ValveId ASC
+        """
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+
+        # Let's format the dictionary a bit better so it has proper keys on it
+        return_list = []
+        for result in results:
+            return_list.append(
+                {
+                    'valve_id': result[0],
+                    'description': result[1],
+                    'conductivity_threshold': result[2],
+                    'Watering_delay_seconds': result[3],
+                    'open_duration_seconds': result[4],
+                }
+            )
+
+        return return_list
 
 
 class ConnectionWrapper:
