@@ -539,7 +539,7 @@ class DatabaseClient:
                     'valve_id': result[0],
                     'description': result[1],
                     'conductivity_threshold': result[2],
-                    'Watering_delay_seconds': result[3],
+                    'watering_delay_seconds': result[3],
                     'open_duration_seconds': result[4],
                 }
             )
