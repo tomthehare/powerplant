@@ -7,6 +7,7 @@ import logging
 import signal
 import sys
 import os
+import json
 import datetime
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -43,6 +44,24 @@ def current_hour():
 
 def current_minute():
     return datetime.datetime.now().minute
+
+
+class TempHumidReading:
+    def __init__(self, temp, humid):
+        self.temp_c = temp
+        self.humid = humid
+
+    def get_temp(self):
+        return round((9 * self.temp_c) / 5 + 32, 1)
+
+    def get_temperature(self):
+        return self.get_temp()
+
+    def get_humidity(self):
+        return round(self.humid, 1)
+
+    def get_heat_index(self):
+        return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
 
 
 class WebClient:
@@ -84,13 +103,13 @@ class ValveConfig:
 
 
 class Config:
-
     def __init__(self):
         self.valves = {}
 
-    def update_config(self, input_config):
-        for valve_config in input_config['valves']:
-            valve_id = valve_config['id']
+    def update_valve_config(self, input_config):
+        breakpoint()
+        for valve_config in input_config:
+            valve_id = valve_config['valve_id']
             if valve_id not in self.valves.keys():
                 self.valves[valve_id] = ValveConfig()
 
@@ -120,7 +139,6 @@ class ConfigSyncTask:
     def __init__(self, run_every_seconds, web_client: WebClient, config: Config):
         self.run_every_seconds = run_every_seconds
         self.last_run_ts = 0
-        self.url = url
         self.web_client = web_client
         self.config = config
 
@@ -128,9 +146,9 @@ class ConfigSyncTask:
         return timestamp() > (self.last_run_ts + self.run_every_seconds)
 
     def run(self):
-        new_config = self.web_client.read_config()
-        logger.info('Got new valve config: ' + json.dumps(new_config)
-        self.config.update_config(new_config)
+        new_config = self.web_client.read_valve_config()
+        logging.info('Got new valve config: ' + json.dumps(new_config, indent=2))
+        self.config.update_valve_config(new_config)
 
 class ValveLock:
     def __init__(self):
@@ -150,24 +168,6 @@ class ValveLock:
         else:
             logger.warning('Valve %d not owning the lock asked for a release of the lock')
             return False
-
-
-class TempHumidReading:
-    def __init__(self, temp, humid):
-        self.temp_c = temp
-        self.humid = humid
-
-    def get_temp(self):
-        return round((9 * self.temp_c) / 5 + 32, 1)
-
-    def get_temperature(self):
-        return self.get_temp()
-
-    def get_humidity(self):
-        return round(self.humid, 1)
-
-    def get_heat_index(self):
-        return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
 
 
 class TempHumidSensor:
