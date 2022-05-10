@@ -100,6 +100,34 @@ def get_valve_config():
 
     return jsonify(valve_config), 200
 
+def read_fan_config():
+    fan_config_path = 'fan-config.json'
+
+    with open(fan_config_path, 'r') as f:
+        config = json.load(f)
+
+    return config
+
+@app.route('/fan-config', methods=['GET'])
+def get_fan_config():
+    config = read_fan_config()
+    return jsonify(config), 200
+
+
+@app.route('/fan-config/temp', methods=['POST'])
+def set_fan_temp():
+    config = read_fan_config()
+
+    if 'fan_temp' not in request.form:
+        return 'Missing fan temp in body', 400
+
+    config['fan_temp'] = request.form['fan_temp']
+
+    with open('fan-config.json', 'w') as f:
+        json.dump(config, f)
+
+    return 'Set new temp', 200
+    
 
 @app.route('/temp-humid-outside', methods = ['POST'])
 def persist_temp_and_humid_outside():
@@ -188,6 +216,8 @@ def scatter():
     inside_temperature = summary_details['Inside Temperature']['InsideDegreesF']
     outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']
 
+    fan_config = read_fan_config()
+
     return render_template(
         "scatter.html",
         date_start=format_timestamp_as_local(date_start),
@@ -195,7 +225,8 @@ def scatter():
         plot1=plot_object,
         inside_temp=inside_temperature,
         outside_temp=outside_temperature,
-        delta_temp=round(inside_temperature - outside_temperature, 1)
+        delta_temp=round(inside_temperature - outside_temperature, 1),
+        fan_temp=fan_config['fan_temp']
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])
