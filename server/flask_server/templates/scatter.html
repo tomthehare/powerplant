@@ -30,6 +30,7 @@
 		    <h2>Inside temp: {{ inside_temp }}</h2>
 		    <h2>Outside temp: {{ outside_temp }}</h2>
 		    <h2>Delta temp: {{ delta_temp }}</h2>
+		    <h2>Fan Temp: {{ fan_temp }}</h2>
 	    </div>
     </div>
     <div class="row">
@@ -37,6 +38,14 @@
 		    <h2><a href="/scatter">1 Day</a></h2>
 		    <h2><a href="/scatter?hours_back=72">3 Days</a></h2>
 		    <h2><a href="/scatter?hours_back=168">7 Days</a></h2>
+	    </div>
+    </div>
+    <div>
+	    <div class="col-md-6">
+		    <form action="/fan-config/temp" method="post">
+			<label for="fan_temp">Fan temp:</label>
+			<input type="text" value="{{ fan_temp  }}" id="fan_temp" name="fan_temp"> <input type="submit" value="Submit"> 
+		    </form>
 	    </div>
     </div>
 </div>
