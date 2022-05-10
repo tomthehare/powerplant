@@ -92,6 +92,12 @@ class WebClient:
 
         return r.json()
 
+    def read_fan_config(self):
+        url = SERVER_URL + '/fan-config'
+        response = requests.get(url)
+
+        return response.json()
+
 
 class ValveConfig:
 
@@ -106,6 +112,13 @@ class ValveConfig:
 class Config:
     def __init__(self):
         self.valves = {}
+        self.fan_temp = 85
+
+    def update_fan_temp_config(self, fan_temp):
+        if isinstance(fan_temp, dict):
+            fan_temp = int(fan_temp['fan_temp'])
+
+        self.fan_temp = int(fan_temp)
 
     def update_valve_config(self, input_config):
         for valve_config in input_config:
@@ -158,7 +171,13 @@ class ConfigSyncTask:
         new_config = self.web_client.read_valve_config()
         logging.info('Got new valve config: ' + json.dumps(new_config, indent=2))
         self.config.update_valve_config(new_config)
+
+        new_fan_config = self.web_client.read_fan_config()
+        logging.info('Got new fan config: ' + json.dumps(new_fan_config, indent=2))
+        self.config.update_fan_temp_config(new_fan_config)
+
         self.last_run_ts = timestamp()
+        
 
 class ValveLock:
     def __init__(self):
@@ -205,13 +224,13 @@ class TempHumidSensor:
 
 class FanTask:
 
-    def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, trigger_temp):
+    def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config):
         self.temp_humid_sensor = temp_humid_sensor
         self.run_every_seconds = run_every_seconds
         self.power_pin = power_pin
         self.is_on = False
         self.last_run_ts = 0
-        self.trigger_temp = trigger_temp
+        self.config = config
 
         logging.debug('Setting up fan on pin %d', self.power_pin)
 
@@ -230,9 +249,9 @@ class FanTask:
         logging.info('(fan) Current temp: ' + str(temp_f_now))
         logging.info('(fan) Fan is: ' + ('on' if self.is_on else 'off'))
 
-        if self.is_on and temp_f_now < self.trigger_temp:
+        if self.is_on and temp_f_now < self.config.fan_temp:
             self.turn_off()
-        elif not self.is_on and temp_f_now > self.trigger_temp:
+        elif not self.is_on and temp_f_now > self.config.fan_temp:
             self.turn_on()            
 
     def turn_on(self):       
@@ -431,7 +450,7 @@ tasks = [
     config_sync_task,
     TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
     TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
-    FanTask(60, PIN_FAN_POWER, tempHumidInside, 85),
+    FanTask(60, PIN_FAN_POWER, tempHumidInside, config),
     #WaterPlantTask(TEN_MINUTES, valve_1, web_client),
     #WaterPlantTask(TEN_MINUTES, valve_2, web_client),
     #WaterPlantTask(TEN_MINUTES, valve_3, web_client),
