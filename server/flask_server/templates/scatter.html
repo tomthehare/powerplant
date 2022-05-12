@@ -40,11 +40,90 @@
 		    <h2><a href="/scatter?hours_back=168">7 Days</a></h2>
 	    </div>
     </div>
+    <hr>
+    <h2>WATER</h2>
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/1/water" method="post">
+			<label for="valve_water_1">Water Valve 1:</label>
+			<input type="text" value="60" id="valve_1_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="1" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/2/water" method="post">
+			<label for="valve_water_2">Water Valve 2:</label>
+			<input type="text" value="60" id="valve_2_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="2" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/3/water" method="post">
+			<label for="valve_water_3">Water Valve 3:</label>
+			<input type="text" value="60" id="valve_3_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="3" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/7/water" method="post">
+			<label for="valve_water_7">Water Valve 7:</label>
+			<input type="text" value="60" id="valve_7_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="7" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/8/water" method="post">
+			<label for="valve_water_8">Water Valve 8:</label>
+			<input type="text" value="60" id="valve_8_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="8" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+    <div>
+	    <div class="col-md-6">
+		    <form action="valves/9/water" method="post">
+			<label for="valve_water_9">Water Valve 9:</label>
+			<input type="text" value="60" id="valve_9_open_duration" name="open_duration_seconds">
+			<input type="hidden" name="valve_id" value="9" />
+			<input type="submit" value="Set Queue">
+		    </form>
+	    </div>
+    </div>
+    <h3>
+	    Current Queue
+    </h3>
+    <div>
+	    <div class="col-md-6">
+		<ul>
+			<!-- For loop logic of jinja template -->
+			{%for entry in watering_queue%}
+				<li>{{ entry['valve_id'] }} - {{ entry['open_duration_seconds'] }}</li>
+			{%endfor%}
+		</ul>    
+	    </div>
+    </div>
+
+    <h2>FAN</h2>
     <div>
 	    <div class="col-md-6">
 		    <form action="/fan-config/temp" method="post">
 			<label for="fan_temp">Fan temp:</label>
-			<input type="text" value="{{ fan_temp  }}" id="fan_temp" name="fan_temp"> <input type="submit" value="Submit"> 
+			<input type="text" value="{{ fan_temp  }}" id="fan_temp" name="fan_temp">
+			<input type="submit" value="Submit"> 
 		    </form>
 	    </div>
     </div>
