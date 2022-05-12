@@ -169,11 +169,11 @@ class ConfigSyncTask:
             return
 
         new_config = self.web_client.read_valve_config()
-        logging.info('Got new valve config: ' + json.dumps(new_config, indent=2))
+        logging.debug('Got new valve config: ' + json.dumps(new_config, indent=2))
         self.config.update_valve_config(new_config)
 
         new_fan_config = self.web_client.read_fan_config()
-        logging.info('Got new fan config: ' + json.dumps(new_fan_config, indent=2))
+        logging.debug('Got new fan config: ' + json.dumps(new_fan_config, indent=2))
         self.config.update_fan_temp_config(new_fan_config)
 
         self.last_run_ts = timestamp()
@@ -213,7 +213,7 @@ class TempHumidSensor:
             raise Exception(msg)
 
         humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, self.data_pin)
-        logging.info('Read temp and humidity on pin %d: %f *F, %f percent Humidity', self.data_pin, temperature, humidity)
+        logging.debug('Read temp and humidity on pin %d: %f *F, %f percent Humidity', self.data_pin, temperature, humidity)
         self.last_read_ts = timestamp()
 
         if humidity is not None and temperature is not None:
@@ -232,7 +232,7 @@ class FanTask:
         self.last_run_ts = 0
         self.config = config
 
-        logging.debug('Setting up fan on pin %d', self.power_pin)
+        logging.info('Setting up fan on pin %d', self.power_pin)
 
         GPIO.setup(self.power_pin, GPIO.OUT)
         GPIO.output(self.power_pin, GPIO.HIGH)
@@ -246,8 +246,8 @@ class FanTask:
         temp_now = self.temp_humid_sensor.read()
         temp_f_now = temp_now.get_temp()
 
-        logging.info('(fan) Current temp: ' + str(temp_f_now))
-        logging.info('(fan) Fan is: ' + ('on' if self.is_on else 'off'))
+        logging.debug('(fan) Current temp: ' + str(temp_f_now))
+        logging.debug('(fan) Fan is: ' + ('on' if self.is_on else 'off'))
 
         if self.is_on and temp_f_now < self.config.fan_temp:
             self.turn_off()
@@ -296,7 +296,7 @@ class Valve:
         self.is_open = False
         self.signal_pin = signal_pin
         self.valve_config = valve_config
-        logging.debug('Setting up %s valve on pin %d', self.get_description(), self.signal_pin)
+        logging.info('Setting up %s valve on pin %d', self.get_description(), self.signal_pin)
 
         GPIO.setup(self.signal_pin, GPIO.OUT)
         GPIO.output(self.signal_pin, GPIO.HIGH)
@@ -379,7 +379,7 @@ class GrowLightTask:
         GPIO.setup(self.power_pin, GPIO.OUT)
         GPIO.output(self.power_pin, GPIO.HIGH)
 
-        logging.debug("Light set to turn on at %d:%d and turn off at %d:%d" % (self.time_on_hour, self.time_on_minute, self.time_off_hour, self.time_off_minute))
+        logging.info("Light set to turn on at %d:%d and turn off at %d:%d" % (self.time_on_hour, self.time_on_minute, self.time_off_hour, self.time_off_minute))
 
     def should_be_on(self):
         turn_on_min_timestamp = (self.time_on_hour * 60) + self.time_on_minute
@@ -394,12 +394,12 @@ class GrowLightTask:
     def turn_off_light(self):
         GPIO.output(self.power_pin, GPIO.HIGH)
         self.light_on = False
-        logging.debug("turned off the grow lights")
+        logging.info("turned off the grow lights")
 
     def turn_on_light(self):
         GPIO.output(self.power_pin, GPIO.LOW)
         self.light_on = True
-        logging.debug("turned on the grow lights")
+        logging.info("turned on the grow lights")
 
     def run(self):
         if self.light_on and self.should_be_off():
@@ -451,12 +451,12 @@ tasks = [
     TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
     TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
     FanTask(60, PIN_FAN_POWER, tempHumidInside, config),
-    #WaterPlantTask(TEN_MINUTES, valve_1, web_client),
-    #WaterPlantTask(TEN_MINUTES, valve_2, web_client),
-    #WaterPlantTask(TEN_MINUTES, valve_3, web_client),
-    #WaterPlantTask(TEN_MINUTES, valve_7, web_client),
-    #WaterPlantTask(TEN_MINUTES, valve_8, web_client),
-    #WaterPlantTask(TEN_MINUTES, valve_9, web_client),
+    #WaterPlantTask(TEN_MINUTES, valve_1, valve_lock),
+    #WaterPlantTask(TEN_MINUTES, valve_2, valve_lock),
+    #WaterPlantTask(TEN_MINUTES, valve_3, valve_lock),
+    #WaterPlantTask(TEN_MINUTES, valve_7, valve_lock),
+    #WaterPlantTask(TEN_MINUTES, valve_8, valve_lock),
+    #WaterPlantTask(TEN_MINUTES, valve_9, valve_lock),
     #ValveCloseTask(valve_1),
     #ValveCloseTask(valve_2),
     #ValveCloseTask(valve_3),
