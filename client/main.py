@@ -10,22 +10,22 @@ import os
 import json
 import datetime
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
 PIN_TEMP_HUMIDITY_INSIDE = 18
 PIN_TEMP_HUMIDITY_OUTSIDE = 15
 PIN_FAN_POWER = 17
-PIN_VALVE_1_POWER = -1
-PIN_VALVE_2_POWER = -1
-PIN_VALVE_3_POWER = -1
+PIN_VALVE_1_POWER = 26
+PIN_VALVE_2_POWER = 6
+PIN_VALVE_3_POWER = 5
 PIN_VALVE_4_POWER = -1
 PIN_VALVE_5_POWER = -1
 PIN_VALVE_6_POWER = -1
-PIN_VALVE_7_POWER = -1
-PIN_VALVE_8_POWER = -1
-PIN_VALVE_9_POWER = -1
+PIN_VALVE_7_POWER = 21
+PIN_VALVE_8_POWER = 20
+PIN_VALVE_9_POWER = 16
 
 PIN_GROW_LIGHT_POWER = -1
 
@@ -96,6 +96,12 @@ class WebClient:
         url = SERVER_URL + '/fan-config'
         response = requests.get(url)
 
+        return response.json()
+
+    def read_watering_queue(self):
+        url = SERVER_URL + '/valves/watering-queue'
+
+        response = requests.get(url)
         return response.json()
 
 
@@ -184,6 +190,8 @@ class ValveLock:
         self.locked_in_id = -1
 
     def acquire_lock(self, valve_id):
+        valve_id = int(valve_id)
+
         if self.locked_in_id < 0:
             self.locked_in_id = valve_id
             return True
@@ -191,6 +199,8 @@ class ValveLock:
         return False
 
     def release_lock(self, valve_id):
+        valve_id = int(valve_id)
+
         if self.locked_in_id == valve_id:
             self.locked_in_id = -1
             return True
@@ -317,15 +327,54 @@ class Valve:
 
 
 class ValveCloseTask:
-    def __init__(self, valve: Valve, valve_lock: ValveLock):
+    def __init__(self, valve: Valve, valve_lock: ValveLock, config):
         self.valve = valve
+        self.valve_lock = valve_lock
+        self.config = config
 
     def run(self):
-        if self.valve.is_open and timestamp() > (self.valve.last_opened_time + self.valve.open_duration):
+        if self.valve.is_open and timestamp() > (self.valve.last_opened_time + self.config.get_valve_config(self.valve.id).open_duration_seconds):
             self.valve.close()
+            self.valve_lock.release_lock(self.valve.id)
             return True
 
         return False
+
+class WaterQueueTask:
+    def __init__(self, web_client, run_every_seconds, valve_lock, valve_dict):
+        self.web_client = web_client
+        self.run_every_seconds = run_every_seconds
+        self.last_run_ts = 0
+        self.valve_lock = valve_lock
+        self.valve_dict = valve_dict
+
+    def should_run(self):      
+        return timestamp() > (self.last_run_ts + self.run_every_seconds)
+
+    def run(self):
+        if not self.should_run():
+            return
+
+        self.last_run_ts = timestamp()
+
+        watering_queue = self.web_client.read_watering_queue()
+
+        if not watering_queue:
+            return
+
+        next_valve_id = watering_queue[0]['valve_id']
+        if self.valve_lock.acquire_lock(next_valve_id):
+            url = SERVER_URL + '/valves/watering-queue/%s' % next_valve_id
+            response = requests.delete(url)
+
+            if response.status_code != 200:
+                logging.error('Error received trying to dequeue valve')
+                logging.error(response.json())
+                return
+
+            self.valve_dict[next_valve_id].open()
+            
+
 
 class WaterPlantTask:
     def __init__(self, run_every_seconds, valve: Valve, valve_lock: ValveLock):
@@ -435,12 +484,14 @@ config_sync_task = ConfigSyncTask(FIFTEEN_MINUTES, web_client, config)
 config_sync_task.run()
 
 valve_lock = ValveLock()
-#valve_1 = Valve(1, PIN_VALVE_1_POWER, config.get_valve_config(1))
-#valve_2 = Valve(2, PIN_VALVE_2_POWER, config.get_valve_config(2))
-#valve_3 = Valve(3, PIN_VALVE_3_POWER, config.get_valve_config(3))
-#valve_7 = Valve(7, PIN_VALVE_7_POWER, config.get_valve_config(7))
-#valve_8 = Valve(8, PIN_VALVE_8_POWER, config.get_valve_config(8))
-#valve_9 = Valve(9, PIN_VALVE_9_POWER, config.get_valve_config(9))
+valve_1 = Valve(1, PIN_VALVE_1_POWER, config.get_valve_config(1))
+valve_2 = Valve(2, PIN_VALVE_2_POWER, config.get_valve_config(2))
+valve_3 = Valve(3, PIN_VALVE_3_POWER, config.get_valve_config(3))
+valve_7 = Valve(7, PIN_VALVE_7_POWER, config.get_valve_config(7))
+valve_8 = Valve(8, PIN_VALVE_8_POWER, config.get_valve_config(8))
+valve_9 = Valve(9, PIN_VALVE_9_POWER, config.get_valve_config(9))
+
+valve_dict = {'1': valve_1, '2': valve_2, '3': valve_3, '7': valve_7, '8': valve_8, '9': valve_9}
 
 ########################################
 ########### EXECUTE TASKS ##############
@@ -451,18 +502,19 @@ tasks = [
     TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
     TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
     FanTask(60, PIN_FAN_POWER, tempHumidInside, config),
+    WaterQueueTask(web_client, 30, valve_lock, valve_dict),
     #WaterPlantTask(TEN_MINUTES, valve_1, valve_lock),
     #WaterPlantTask(TEN_MINUTES, valve_2, valve_lock),
     #WaterPlantTask(TEN_MINUTES, valve_3, valve_lock),
     #WaterPlantTask(TEN_MINUTES, valve_7, valve_lock),
     #WaterPlantTask(TEN_MINUTES, valve_8, valve_lock),
     #WaterPlantTask(TEN_MINUTES, valve_9, valve_lock),
-    #ValveCloseTask(valve_1),
-    #ValveCloseTask(valve_2),
-    #ValveCloseTask(valve_3),
-    #ValveCloseTask(valve_7),
-    #ValveCloseTask(valve_8),
-    #ValveCloseTask(valve_9),
+    ValveCloseTask(valve_1, valve_lock, config),
+    ValveCloseTask(valve_2, valve_lock, config),
+    ValveCloseTask(valve_3, valve_lock, config),
+    ValveCloseTask(valve_7, valve_lock, config),
+    ValveCloseTask(valve_8, valve_lock, config),
+    ValveCloseTask(valve_9, valve_lock, config),
 ]
 
 while True:
