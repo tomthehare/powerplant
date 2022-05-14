@@ -8,6 +8,7 @@ import pytz
 from time_helper import format_timestamp_as_local, timestamp
 from graph_helper import GraphHelper
 import logging
+import os.path
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
@@ -127,7 +128,63 @@ def set_fan_temp():
         json.dump(config, f)
 
     return 'Set new temp', 200
+
+def get_watering_queue_data():
+    file_path = 'watering_queue.json'
+
+    queue = []
+
+    if not os.path.exists(file_path):
+        return []
+
+    with open(file_path, 'r') as f:
+        queue = json.load(f)
+
+    return queue
+
+
+@app.route('/valves/watering-queue', methods=['GET'])
+def get_valve_watering_queue():
+    queue_data = get_watering_queue_data()
+
+    return queue_data, 200
+
+@app.route('/valves/<valve_id>/water', methods=['POST'])
+def add_valve_queue(valve_id):
+    queue_data = get_watering_queue_data()
+
+    for entry in queue_data:
+        queue_valve_id = entry['valve_id']
+        if queue_valve_id == valve_id:
+            return 'Valve already in queue', 400
+
+    data = request.form
+
+    open_duration = data['open_duration_seconds']
+
+    queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
+
+    queue_data.append(queue_entry)
+
+    with open('watering_queue.json', 'w') as f:
+        json.dump(queue_data, f)
+
+    return json.dumps(queue_data), 201
+
+@app.route('/valves/<valve_id>/dequeue', methods=['DELETE'])
+def remove_watering_queue():
+    queue_data = get_watering_queue_data()
+
+    for entry in queue_data:
+        queue_valve_id = entry['valve_id']
+        if queue_valve_id == valve_id:
+            queue_data.remove(entry)
+            break
+
+    with open('watering_queue.json', 'w') as f:
+        json.dump(queue_data, f)
     
+    return 'Removed', 200
 
 @app.route('/temp-humid-outside', methods = ['POST'])
 def persist_temp_and_humid_outside():
@@ -218,6 +275,8 @@ def scatter():
 
     fan_config = read_fan_config()
 
+    watering_queue = get_watering_queue_data()
+
     return render_template(
         "scatter.html",
         date_start=format_timestamp_as_local(date_start),
@@ -226,7 +285,8 @@ def scatter():
         inside_temp=inside_temperature,
         outside_temp=outside_temperature,
         delta_temp=round(inside_temperature - outside_temperature, 1),
-        fan_temp=fan_config['fan_temp']
+        fan_temp=fan_config['fan_temp'],
+        watering_queue=watering_queue
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])
