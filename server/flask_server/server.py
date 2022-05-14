@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, render_template_string
+from flask import Flask, request, jsonify, render_template, render_template_string, Response
 from datetime import datetime
 import time
 import json
@@ -147,7 +147,7 @@ def get_watering_queue_data():
 def get_valve_watering_queue():
     queue_data = get_watering_queue_data()
 
-    return queue_data, 200
+    return Response(json.dumps(queue_data), mimetype='application/json', status=200)
 
 @app.route('/valves/<valve_id>/water', methods=['POST'])
 def add_valve_queue(valve_id):
@@ -171,8 +171,8 @@ def add_valve_queue(valve_id):
 
     return json.dumps(queue_data), 201
 
-@app.route('/valves/<valve_id>/dequeue', methods=['DELETE'])
-def remove_watering_queue():
+@app.route('/valves/watering-queue/<valve_id>', methods=['DELETE'])
+def remove_watering_queue(valve_id):
     queue_data = get_watering_queue_data()
 
     for entry in queue_data:
