@@ -9,8 +9,11 @@ import sys
 import os
 import json
 import datetime
+from event_client import EventClient
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+
+event_client = EventClient()
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
@@ -208,9 +211,7 @@ class ValveLock:
             logger.warning('Valve %d not owning the lock asked for a release of the lock')
             return False
 
-
 class TempHumidSensor:
-
     def __init__(self, pin):
         logging.info('Setting up temperature/humidity sensor on data pin %d', pin)
         self.data_pin = pin
@@ -219,7 +220,6 @@ class TempHumidSensor:
     def read(self):
         if (self.last_read_ts + 2) >= timestamp():
             msg = 'Too soon to read temp/humid on pin %d' % self.data_pin
-            logging.error(msg)
             raise Exception(msg)
 
         humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, self.data_pin)
@@ -233,7 +233,6 @@ class TempHumidSensor:
             raise Exception('Unable to read sensor')
 
 class FanTask:
-
     def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config):
         self.temp_humid_sensor = temp_humid_sensor
         self.run_every_seconds = run_every_seconds
@@ -251,8 +250,6 @@ class FanTask:
         if timestamp() < (self.last_run_ts + self.run_every_seconds):
             return
 
-        self.last_run_ts = timestamp()
-
         temp_now = self.temp_humid_sensor.read()
         temp_f_now = temp_now.get_temp()
 
@@ -264,14 +261,18 @@ class FanTask:
         elif not self.is_on and temp_f_now > self.config.fan_temp:
             self.turn_on()            
 
+        self.last_run_ts = timestamp()
+
     def turn_on(self):       
         GPIO.output(self.power_pin, GPIO.LOW)
         self.is_on = True
+        event_client.log_fan_event(True)
         logging.info("Turned fan on")
 
     def turn_off(self):
         GPIO.output(self.power_pin, GPIO.HIGH)
         self.is_on = False
+        event_client.log_fan_event(False)
         logging.info("Turned fan off")
 
 class TempHumidLogTask:
@@ -306,6 +307,7 @@ class Valve:
         self.is_open = False
         self.signal_pin = signal_pin
         self.valve_config = valve_config
+        self.override_open_duration_seconds = -1
         logging.info('Setting up %s valve on pin %d', self.get_description(), self.signal_pin)
 
         GPIO.setup(self.signal_pin, GPIO.OUT)
@@ -314,15 +316,19 @@ class Valve:
     def get_description(self):
         return self.valve_config.description
 
-    def open(self):
+    def open(self, open_duration_seconds = -1):
         GPIO.output(self.signal_pin, GPIO.LOW)
         self.is_open = True
         self.last_opened_time = timestamp()
+        if int(open_duration_seconds) > 0:
+            self.override_open_duration_seconds = open_duration_seconds
+
         logging.info('Valve for %s opened', self.get_description())
 
     def close(self):
         GPIO.output(self.signal_pin, GPIO.HIGH)
         self.is_open = False
+        self.override_open_duration_seconds = -1
         logging.info('Valve for %s closed', self.get_description())
 
 
@@ -333,7 +339,17 @@ class ValveCloseTask:
         self.config = config
 
     def run(self):
-        if self.valve.is_open and timestamp() > (self.valve.last_opened_time + self.config.get_valve_config(self.valve.id).open_duration_seconds):
+        #if int(self.valve.override_open_duration_seconds) < 0:
+        #    closing_time = self.valve.last_opened_time + self.config.get_valve_config(self.valve.id).open_duration_seconds
+        #else:
+        #    closing_time = self.valve.last_opened_time + int(self.valve.override_open_duration_seconds)
+
+        closing_time = self.valve.last_opened_time + self.config.get_valve_config(self.valve.id).open_duration_seconds
+
+        if self.valve.is_open:
+            logging.debug('Right now its %d, will close valve at %d', timestamp(), int(closing_time))
+
+        if self.valve.is_open and timestamp() > int(closing_time):
             self.valve.close()
             self.valve_lock.release_lock(self.valve.id)
             return True
@@ -343,7 +359,7 @@ class ValveCloseTask:
 class WaterQueueTask:
     def __init__(self, web_client, run_every_seconds, valve_lock, valve_dict):
         self.web_client = web_client
-        self.run_every_seconds = run_every_seconds
+        self.run_every_seconds = int(run_every_seconds)
         self.last_run_ts = 0
         self.valve_lock = valve_lock
         self.valve_dict = valve_dict
@@ -355,14 +371,18 @@ class WaterQueueTask:
         if not self.should_run():
             return
 
-        self.last_run_ts = timestamp()
-
         watering_queue = self.web_client.read_watering_queue()
 
         if not watering_queue:
+            self.last_run_ts = timestamp()
             return
 
+        # If the queue is > 1 entry, we should immediately jump into the next one, not wait
+        if len(watering_queue) == 1:
+            self.last_run_ts = timestamp()
+
         next_valve_id = watering_queue[0]['valve_id']
+        open_duration_seconds = watering_queue[0]['valve_id']
         if self.valve_lock.acquire_lock(next_valve_id):
             url = SERVER_URL + '/valves/watering-queue/%s' % next_valve_id
             response = requests.delete(url)
@@ -372,9 +392,7 @@ class WaterQueueTask:
                 logging.error(response.json())
                 return
 
-            self.valve_dict[next_valve_id].open()
-            
-
+            self.valve_dict[next_valve_id].open(open_duration_seconds)
 
 class WaterPlantTask:
     def __init__(self, run_every_seconds, valve: Valve, valve_lock: ValveLock):
@@ -503,12 +521,6 @@ tasks = [
     TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
     FanTask(60, PIN_FAN_POWER, tempHumidInside, config),
     WaterQueueTask(web_client, 30, valve_lock, valve_dict),
-    #WaterPlantTask(TEN_MINUTES, valve_1, valve_lock),
-    #WaterPlantTask(TEN_MINUTES, valve_2, valve_lock),
-    #WaterPlantTask(TEN_MINUTES, valve_3, valve_lock),
-    #WaterPlantTask(TEN_MINUTES, valve_7, valve_lock),
-    #WaterPlantTask(TEN_MINUTES, valve_8, valve_lock),
-    #WaterPlantTask(TEN_MINUTES, valve_9, valve_lock),
     ValveCloseTask(valve_1, valve_lock, config),
     ValveCloseTask(valve_2, valve_lock, config),
     ValveCloseTask(valve_3, valve_lock, config),
