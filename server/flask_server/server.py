@@ -93,12 +93,13 @@ def parse_humid_temp(data):
 
   return (unix_timestamp, temp_value, humidity_value, heat_index_value)
 
+def get_valve_config_dict():
+    database_client = DatabaseClient('powerplant.db')
+    return database_client.get_valve_config()
 
 @app.route('/valve-config', methods = ['GET'])
 def get_valve_config():
-    database_client = DatabaseClient('powerplant.db')
-    valve_config = database_client.get_valve_config()
-
+    valve_config = get_valve_config_dict()
     return jsonify(valve_config), 200
 
 def read_fan_config():
@@ -170,6 +171,24 @@ def add_valve_queue(valve_id):
         json.dump(queue_data, f)
 
     return json.dumps(queue_data), 201
+
+@app.route('/valves/water', methods=['POST'])
+def water_all():
+    queue_data = get_watering_queue_data()
+
+    data = request.form
+
+    open_duration = data['open_duration_seconds']
+
+    for valve_id in [1,2,3,7,8,9]:
+        queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
+        queue_data.append(queue_entry)
+
+    with open('watering_queue.json', 'w') as f:
+        json.dump(queue_data, f)
+
+    return json.dumps(queue_data), 201
+
 
 @app.route('/valves/watering-queue/<valve_id>', methods=['DELETE'])
 def remove_watering_queue(valve_id):
@@ -255,6 +274,33 @@ def show_summary():
 
     return output, 200
 
+def get_watering_queue_detailed():
+    watering_queue = get_watering_queue_data()
+    valve_config_dict = get_valve_config_dict()
+   
+    print(watering_queue)
+    print()
+    print(valve_config_dict)
+
+
+    detailed_queue = []
+    for entry in watering_queue:
+        valve_config_entry = {'description': 'Unknown'}
+        for config_entry in valve_config_dict:
+            if int(config_entry['valve_id']) == int(entry['valve_id']):
+                valve_config_entry = config_entry
+                break
+
+        detailed_queue.append(
+            {
+                'valve_id': entry['valve_id'],
+                'valve_description': valve_config_entry['description'],
+                'open_duration_seconds': entry['open_duration_seconds']
+            }
+        )
+
+    return detailed_queue
+
 @app.route('/scatter', methods=['GET'])
 def scatter():
     hours_back = request.args.get("hours_back", default=24, type=int)
@@ -274,8 +320,7 @@ def scatter():
     outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']
 
     fan_config = read_fan_config()
-
-    watering_queue = get_watering_queue_data()
+    watering_queue = get_watering_queue_detailed()
 
     return render_template(
         "scatter.html",
