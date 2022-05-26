@@ -342,13 +342,15 @@ class Valve:
         self.last_opened_time = timestamp()
         if int(open_duration_seconds) > 0:
             self.override_open_duration_seconds = open_duration_seconds
-
+ 
+        event_client.log_valve_event(self.id, True)
         logging.info('Valve for %s opened', self.get_description())
 
     def close(self):
         GPIO.output(self.signal_pin, GPIO.HIGH)
         self.is_open = False
         self.override_open_duration_seconds = -1
+        event_client.log_valve_event(self.id, False)
         logging.info('Valve for %s closed', self.get_description())
 
 
