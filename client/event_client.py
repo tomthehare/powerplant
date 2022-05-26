@@ -3,6 +3,7 @@ import os
 import string
 import random
 import json
+import glob
 
 class EventClient:
 
@@ -23,7 +24,7 @@ class EventClient:
         event = {
             'subject': 'fan',
             'time': round(time.time()),
-            'event': 'turned_on' if is_on else 'turned off',
+            'event': 'turned_on' if is_on else 'turned_off',
             'sync_hash': self.fan_event_sync_hash
         }
 
@@ -37,3 +38,22 @@ class EventClient:
         
         with open(file_path, 'w') as f:
             json.dump(event_payload, f)
+
+    def get_earliest_event(self):
+        list_of_files = sorted(filter(os.path.isfile, glob.glob(self.log_dir + '/')))
+
+        list_of_files = os.listdir(self.log_dir)
+
+        if not list_of_files:
+            return None
+
+        list_of_files = sorted(list_of_files)
+        filename = list_of_files[0]
+
+        with open(self.log_dir + '/' + filename, 'r') as f:
+            payload = json.load(f)
+
+        return {'filename': filename, 'payload': payload}
+
+    def delete_event(self, filename):
+        os.remove(self.log_dir + '/' + filename)
