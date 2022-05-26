@@ -12,6 +12,7 @@ import os.path
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
+db_client = client
 graph_helper = GraphHelper(client)
 
 _logger = logging.getLogger('powerplant')
@@ -196,7 +197,7 @@ def remove_watering_queue(valve_id):
 
     for entry in queue_data:
         queue_valve_id = entry['valve_id']
-        if queue_valve_id == valve_id:
+        if int(queue_valve_id) == int(valve_id):
             queue_data.remove(entry)
             break
 
@@ -277,11 +278,6 @@ def show_summary():
 def get_watering_queue_detailed():
     watering_queue = get_watering_queue_data()
     valve_config_dict = get_valve_config_dict()
-   
-    print(watering_queue)
-    print()
-    print(valve_config_dict)
-
 
     detailed_queue = []
     for entry in watering_queue:
@@ -300,6 +296,15 @@ def get_watering_queue_detailed():
         )
 
     return detailed_queue
+
+def get_valve_description(valve_id):
+    valve_config_list = get_valve_config_dict()
+
+    for config_entry in valve_config_list:
+        if int(config_entry['valve_id']) == int(valve_id):
+            return valve_config_entry['description']
+
+    return 'Unknown'
 
 @app.route('/scatter', methods=['GET'])
 def scatter():
@@ -321,6 +326,7 @@ def scatter():
 
     fan_config = read_fan_config()
     watering_queue = get_watering_queue_detailed()
+    valve_config = get_valve_config_dict()
 
     return render_template(
         "scatter.html",
@@ -331,7 +337,8 @@ def scatter():
         outside_temp=outside_temperature,
         delta_temp=round(inside_temperature - outside_temperature, 1),
         fan_temp=fan_config['fan_temp'],
-        watering_queue=watering_queue
+        watering_queue=watering_queue,
+        valve_config_list=valve_config
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])
@@ -365,3 +372,31 @@ def get_plant_group_thirst(descriptor):
 
     return  jsonify({'needs_water': needs_water}), 200
 
+@app.route('/events', methods=['POST'])
+def log_fan_event():
+    event_data = request.form
+    json_event_data = json.dumps(event_data, indent=2)
+
+    subject = event_data['subject']
+    time = event_data['time']
+    event = event_data['event']
+    sync_hash = event_data['sync_hash']
+
+    if subject == 'fan':
+        if event == 'turned_on':
+            if db_client.fan_event_exists(sync_hash):
+                _logger.warning('event was already in database: %s' % json_event_data)
+            else:
+                db_client.insert_fan_on_event(time, sync_hash)
+                _logger.info('processed event: %s' % json_event_data)
+        elif event == 'turned_off' or event == 'turned off':
+            if db_client.fan_event_exists(sync_hash):
+                db_client.update_fan_off_event(time, sync_hash)
+                _logger.info('processed_event: %s' % json_event_data)
+            else:
+                _logger.warning('event not in db for off event: %s' % json.dumps(event_data, indent=2))
+
+    else:
+        _logger.warning('got event we didnt recognize: %s' % json.dumps(event_data, indent=2))
+
+    return 'processed', 200
