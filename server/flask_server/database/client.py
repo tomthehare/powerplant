@@ -170,6 +170,16 @@ class DatabaseClient:
             """
             connection.execute_sql(soil_voltage_table_sql)
 
+        if "FanEvents" not in tables:
+            sql = """
+            CREATE TABLE FanEvents (
+                EventHash TEXT PRIMARY KEY,
+                OnTimestamp INTEGER,
+                OffTimestamp INTEGER
+            )
+            """
+            connection.execute_sql(sql)
+
         connection.wrap_it_up()
 
     def insert_log(
@@ -546,6 +556,47 @@ class DatabaseClient:
 
         return return_list
 
+    def fan_event_exists(self, sync_hash):
+        sql = """
+        SELECT EventHash FROM FanEvents WHERE EventHash = '{event_hash}'
+        """.format(event_hash=sync_hash)
+
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results != []
+
+    def insert_fan_on_event(self, timestamp, sync_hash):
+        sql = """
+        INSERT INTO FanEvents (EventHash, OnTimestamp, OffTimestamp)
+        VALUES ('{event_hash}', {on_timestamp}, NULL)
+        """.format(event_hash=sync_hash, on_timestamp=timestamp)
+
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+    def update_fan_off_event(self, timestamp, sync_hash):
+        sql = """
+        UPDATE FanEvents SET OffTimestamp = {off_timestamp} WHERE EventHash = '{sync_hash}'
+        """.format(off_timestamp=timestamp, sync_hash=sync_hash)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
 
 class ConnectionWrapper:
 

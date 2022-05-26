@@ -1,6 +1,6 @@
 
 <!DOCTYPE html><html>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 <head lang="en">
@@ -8,15 +8,18 @@
     <title>Powerplant Scatter Plot</title>
     <style>
         h2 {text-align: center;}
+	th, td {
+	  padding: 15px;
+	}
     </style>
 </head>
 <body>
-<h1>
+<h1 class="display-2">
 {{ date_start + ' - ' + date_end }}
 </h1>
-<div class="container">
-    <div class="row">
-        <div class="col-md-6">
+<div class="container-fluid">
+	<div class="row">
+        <div class="col-md-50">
             <div class="chart" id="scatter1">
            	<script>
                		 var graphs = {{plot1 | safe}};
@@ -24,85 +27,42 @@
             	</script>
             </div>
         </div>
-    </div>
-    <div class="row">
-	    <div class="col-md-6">
-		    <h2>Inside temp: {{ inside_temp }}</h2>
-		    <h2>Outside temp: {{ outside_temp }}</h2>
-		    <h2>Delta temp: {{ delta_temp }}</h2>
-		    <h2>Fan Temp: {{ fan_temp }}</h2>
-	    </div>
-    </div>
-    <div class="row">
-	    <div class="col-md-6">
-		    <h2><a href="/scatter">1 Day</a></h2>
-		    <h2><a href="/scatter?hours_back=72">3 Days</a></h2>
-		    <h2><a href="/scatter?hours_back=168">7 Days</a></h2>
-	    </div>
-    </div>
-    <hr>
+	</div>
+	<div class="row">
+		<div class="col-md-16">
+		    <h2><a href="/scatter">1 Day</a> | <a href="/scatter?hours_back=72">3 Days</a> | <a href="/scatter?hours_back=168">7 Days</a></h2>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-50">
+			<h2>Inside temp: {{ inside_temp }}</h2>
+		   	<h2>Outside temp: {{ outside_temp }}</h2>
+		    	<h2>Delta temp: {{ delta_temp }}</h2>
+		   	<h2>Fan Temp: {{ fan_temp }}</h2>
+		</div>
+	</div>
+    <hr />
     <h2>WATER</h2>
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/1/water" method="post">
-			<label for="valve_water_1">Water Valve 1:</label>
-			<input type="text" value="60" id="valve_1_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="1" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
+    <table>
+	    {%for valve in valve_config_list%}
+	    	<tr>
+			<form action="valves/{{ valve['valve_id'] }}/water" method="post">
+				<th><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></th>
+				<th><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></th>
+	    			<th><input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" /></th>
+	    			<th><input type="submit" value="Set Queue"></th>
+		   	</form>
+		</tr>
+	    {%endfor%}
 
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/2/water" method="post">
-			<label for="valve_water_2">Water Valve 2:</label>
-			<input type="text" value="60" id="valve_2_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="2" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/3/water" method="post">
-			<label for="valve_water_3">Water Valve 3:</label>
-			<input type="text" value="60" id="valve_3_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="3" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/7/water" method="post">
-			<label for="valve_water_7">Water Valve 7:</label>
-			<input type="text" value="60" id="valve_7_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="7" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/8/water" method="post">
-			<label for="valve_water_8">Water Valve 8:</label>
-			<input type="text" value="60" id="valve_8_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="8" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
-    <div>
-	    <div class="col-md-6">
-		    <form action="valves/9/water" method="post">
-			<label for="valve_water_9">Water Valve 9:</label>
-			<input type="text" value="60" id="valve_9_open_duration" name="open_duration_seconds">
-			<input type="hidden" name="valve_id" value="9" />
-			<input type="submit" value="Set Queue">
-		    </form>
-	    </div>
-    </div>
+    		<tr>
+	    		<form action="valves/water" method="post">
+				<th><label for="valves_all">Water All:</label></th>
+				<th><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></th>
+				<th><input type="submit" value="Queue All"></th>
+	    		</form>
+    		</tr>
+    </table>
     <h3>
 	    Current Queue
     </h3>
@@ -111,7 +71,7 @@
 		<ul>
 			<!-- For loop logic of jinja template -->
 			{%for entry in watering_queue%}
-				<li>{{ entry['valve_id'] }} - {{ entry['open_duration_seconds'] }}</li>
+				<li>{{ entry['valve_description'] }} - {{ entry['open_duration_seconds'] }} seconds</li>
 			{%endfor%}
 		</ul>    
 	    </div>
