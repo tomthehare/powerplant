@@ -10,10 +10,13 @@ import os
 import json
 import datetime
 from event_client import EventClient
+import traceback
+from task_coordinator import TaskCoordinator
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 
 event_client = EventClient()
+task_coordinator = TaskCoordinator()
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
@@ -106,6 +109,16 @@ class WebClient:
 
         response = requests.get(url)
         return response.json()
+
+    def post_event(self, payload):
+        url = SERVER_URL +  '/events'
+
+        response =  requests.post(url, data=payload)
+
+        if response.status_code != 200:
+            logging.error("Error posting event: %s" % response.json())
+
+        return response.status_code == 200
 
 
 class ValveConfig:
@@ -211,6 +224,9 @@ class ValveLock:
             logger.warning('Valve %d not owning the lock asked for a release of the lock')
             return False
 
+    def is_locked(self):
+        return self.locked_in_id > 0
+
 class TempHumidSensor:
     def __init__(self, pin):
         logging.info('Setting up temperature/humidity sensor on data pin %d', pin)
@@ -274,6 +290,10 @@ class FanTask:
         self.is_on = False
         event_client.log_fan_event(False)
         logging.info("Turned fan off")
+
+    def shutdown(self):
+        if self.is_on:
+            self.turn_off()
 
 class TempHumidLogTask:
 
@@ -371,6 +391,10 @@ class WaterQueueTask:
         if not self.should_run():
             return
 
+        # If the valve is locked, just return without setting the time so it checks again soon
+        if self.valve_lock.is_locked():
+            return
+
         watering_queue = self.web_client.read_watering_queue()
 
         if not watering_queue:
@@ -392,7 +416,7 @@ class WaterQueueTask:
                 logging.error(response.json())
                 return
 
-            self.valve_dict[next_valve_id].open(open_duration_seconds)
+            self.valve_dict[str(next_valve_id)].open(open_duration_seconds)
 
 class WaterPlantTask:
     def __init__(self, run_every_seconds, valve: Valve, valve_lock: ValveLock):
@@ -474,9 +498,30 @@ class GrowLightTask:
         elif not self.light_on and self.should_be_on():
             self.turn_on_light()
 
+class EventSendingTask:
+    def __init__(self, events_to_send, web_client):
+        self.events_to_send = events_to_send
+        self.web_client = web_client
+
+    def run(self):
+        counter = 0
+        while counter < self.events_to_send:
+            counter = counter + 1
+            details = event_client.get_earliest_event()
+            
+            if not details:
+                break
+
+            filename = details['filename']
+            payload = details['payload']
+
+            if self.web_client.post_event(payload):
+                event_client.delete_event(filename)
+                logging.info('Sent Event: %s' % json.dumps(payload))
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
+    task_coordinator.shutdown()
     GPIO.cleanup()
     sys.exit(0)
 
@@ -515,32 +560,20 @@ valve_dict = {'1': valve_1, '2': valve_2, '3': valve_3, '7': valve_7, '8': valve
 ########### EXECUTE TASKS ##############
 ########################################
 
-tasks = [
-    config_sync_task,
-    TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client),
-    TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client),
-    FanTask(60, PIN_FAN_POWER, tempHumidInside, config),
-    WaterQueueTask(web_client, 30, valve_lock, valve_dict),
-    ValveCloseTask(valve_1, valve_lock, config),
-    ValveCloseTask(valve_2, valve_lock, config),
-    ValveCloseTask(valve_3, valve_lock, config),
-    ValveCloseTask(valve_7, valve_lock, config),
-    ValveCloseTask(valve_8, valve_lock, config),
-    ValveCloseTask(valve_9, valve_lock, config),
-]
+task_coordinator.register_task(config_sync_task)
+task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client))
+task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client))
+task_coordinator.register_task(FanTask(60, PIN_FAN_POWER, tempHumidInside, config))
+task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict))
+task_coordinator.register_task(ValveCloseTask(valve_1, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_2, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_3, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_7, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_8, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_9, valve_lock, config))
+task_coordinator.register_task(EventSendingTask(60, web_client))
 
-while True:
-    for task in tasks:
-        try:
-            task.run();
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            logging.error(e)
-            print(exc_type, fname, exc_tb.tb_lineno) 
-
-
-    time.sleep(5);
+task_coordinator.run()
 
 GPIO.cleanup()
 
