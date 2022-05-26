@@ -180,6 +180,17 @@ class DatabaseClient:
             """
             connection.execute_sql(sql)
 
+        if "ValveEvents" not in tables:
+            sql === """
+            CREATE TABLE ValveEvents (
+                EventHash TEXT PRIMARY KEY,
+                ValveID INTEGER NOT NULL,
+                OpenTimestamp INTEGER,
+                ClosedTimestamp INTEGER
+            )
+            """
+            connection.execute_sql(sql)
+
         connection.wrap_it_up()
 
     def insert_log(
@@ -589,6 +600,47 @@ class DatabaseClient:
     def update_fan_off_event(self, timestamp, sync_hash):
         sql = """
         UPDATE FanEvents SET OffTimestamp = {off_timestamp} WHERE EventHash = '{sync_hash}'
+        """.format(off_timestamp=timestamp, sync_hash=sync_hash)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+
+    def valve_event_exists(self, sync_hash):
+        sql = """
+        SELECT EventHash FROM ValveEvents WHERE EventHash = '{event_hash}'
+        """.format(event_hash=sync_hash)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results != []
+
+    def insert_valve_open_event(self, valve_id, timestamp, sync_hash):
+        sql = """
+        INSERT INTO ValveEvents (EventHash, ValveID, OpenTimestamp, OffTimestamp)
+        VALUES ('{event_hash}', {valve_id}, {on_timestamp}, NULL)
+        """.format(event_hash=sync_hash, valve_id=valve_id, on_timestamp=timestamp)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
+
+    def update_valve_close_event(self, timestamp, sync_hash):
+        sql = """
+        UPDATE ValveEvents SET CloseTimestamp = {timestamp} WHERE EventHash = '{sync_hash}'
         """.format(off_timestamp=timestamp, sync_hash=sync_hash)
 
         connection = ConnectionWrapper(self.database_name)

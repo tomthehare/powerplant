@@ -395,6 +395,21 @@ def log_fan_event():
                 _logger.info('processed_event: %s' % json_event_data)
             else:
                 _logger.warning('event not in db for off event: %s' % json.dumps(event_data, indent=2))
+    elif subject.startswith('valve_'):
+        valve_id = int(subject.replace('valve_', ''))
+
+        if event == 'opened':
+            if db_client.valve_event_exists(sync_hash):
+                _logger.warning('event was already in database: %s' % json_event_data)
+            else:
+                db_client.insert_valve_open_event(valve_id, time, sync_hash)
+                _logger.info('processed event: %s' % json_event_data)
+        elif event == 'closed':
+            if db_client.valve_event_exists(sync_hash):
+                db_client.update_valve_close_event(time, sync_hash)
+                _logger.info('processed_event: %s' % json_event_data)
+            else:
+                _logger.warning('event not in db for valve closed event: %s' % json.dumps(event_data, indent=2))
 
     else:
         _logger.warning('got event we didnt recognize: %s' % json.dumps(event_data, indent=2))
