@@ -87,6 +87,14 @@
 		    </form>
 	    </div>
     </div>
+    <br />
+    
+            <div class="chart" id="bar1">
+           	<script>
+               		 var bar_graphs = {{fan_data_object | safe}};
+               		 Plotly.plot('bar1', bar_graphs,{});
+            	</script>
+            </div>
 </div>
 </body>
 </html>

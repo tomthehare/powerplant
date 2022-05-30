@@ -181,7 +181,7 @@ class DatabaseClient:
             connection.execute_sql(sql)
 
         if "ValveEvents" not in tables:
-            sql === """
+            sql = """
             CREATE TABLE ValveEvents (
                 EventHash TEXT PRIMARY KEY,
                 ValveID INTEGER NOT NULL,
@@ -627,7 +627,7 @@ class DatabaseClient:
 
     def insert_valve_open_event(self, valve_id, timestamp, sync_hash):
         sql = """
-        INSERT INTO ValveEvents (EventHash, ValveID, OpenTimestamp, OffTimestamp)
+        INSERT INTO ValveEvents (EventHash, ValveID, OpenTimestamp, ClosedTimestamp)
         VALUES ('{event_hash}', {valve_id}, {on_timestamp}, NULL)
         """.format(event_hash=sync_hash, valve_id=valve_id, on_timestamp=timestamp)
 
@@ -640,8 +640,8 @@ class DatabaseClient:
 
     def update_valve_close_event(self, timestamp, sync_hash):
         sql = """
-        UPDATE ValveEvents SET CloseTimestamp = {timestamp} WHERE EventHash = '{sync_hash}'
-        """.format(off_timestamp=timestamp, sync_hash=sync_hash)
+        UPDATE ValveEvents SET ClosedTimestamp = {closed_timestamp} WHERE EventHash = '{sync_hash}'
+        """.format(closed_timestamp=timestamp, sync_hash=sync_hash)
 
         connection = ConnectionWrapper(self.database_name)
 
@@ -649,6 +649,25 @@ class DatabaseClient:
             connection.execute_sql(sql)
         finally:
             connection.wrap_it_up()
+
+    def read_fan_data(self, ts_start, ts_end):
+        sql = """
+        SELECT EventHash, OnTimestamp, OffTimestamp
+        FROM FanEvents
+        WHERE (OnTimestamp < {ts_end} AND OffTimestamp > {ts_start}) 
+        OR (OnTimestamp <= {ts_start} AND OffTimestamp > {ts_start} AND OffTimestamp <= {ts_end})
+        OR (OnTimestamp > {ts_start} AND OffTimestamp > {ts_start} AND OffTimestamp > {ts_end})
+        """.format(ts_start=ts_start, ts_end=ts_end)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return results
 
 class ConnectionWrapper:
 

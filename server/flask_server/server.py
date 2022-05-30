@@ -319,15 +319,18 @@ def scatter():
     summary_details = get_summary_dictionary()
 
     if not summary_details:
-        return 'Come back later when there is more data on file!', 404
-
-    inside_temperature = summary_details['Inside Temperature']['InsideDegreesF']
-    outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']
+        inside_temperature = '?'
+        outside_temperature = '?'
+    else:
+        inside_temperature = summary_details['Inside Temperature']['InsideDegreesF']
+        outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']
 
     fan_config = read_fan_config()
     watering_queue = get_watering_queue_detailed()
     valve_config = get_valve_config_dict()
 
+    fan_data_object = graph_helper.get_fan_data(date_start, date_end)
+    
     return render_template(
         "scatter.html",
         date_start=format_timestamp_as_local(date_start),
@@ -338,7 +341,8 @@ def scatter():
         delta_temp=round(inside_temperature - outside_temperature, 1),
         fan_temp=fan_config['fan_temp'],
         watering_queue=watering_queue,
-        valve_config_list=valve_config
+        valve_config_list=valve_config,
+        fan_data_object=fan_data_object
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])
