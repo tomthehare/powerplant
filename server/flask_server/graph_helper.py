@@ -43,13 +43,18 @@ class GraphHelper:
         
         return total / len(temp_set)
 
-    def snap_to_5_min_buckets(self, ts_start, ts_end, data):
+    def get_date_x_axis(self, ts_start, ts_end, empty_value):
         starting_number = ts_start - (ts_start % 300)
 
         the_range = range(starting_number, ts_end, 300)
         the_dict = {}
         for number in the_range:
-            the_dict[number] = []
+            the_dict[number] = [] if isinstance(empty_value, list) else 0
+
+        return the_dict
+
+    def snap_to_5_min_buckets(self, ts_start, ts_end, data):
+        the_dict = self.get_date_x_axis(ts_start, ts_end, [])
 
         for ts, temp in data:
             the_dict[ts - (ts % 300)].append(temp)
@@ -61,8 +66,46 @@ class GraphHelper:
                 the_dict[key] = None
 
         return the_dict
+     
+    def get_fan_data(self, timestamp_start, timestamp_end):
+        dates_dict = self.get_date_x_axis(timestamp_start, timestamp_end, 0)
 
-                
+        fan_data = self.database_client.read_fan_data(timestamp_start, timestamp_end)
+        
+        for (event_hash, ts_on, ts_off) in fan_data:
+            round_down_to_minute = ts_on - (ts_on % 60)
+
+            working_minute = round_down_to_minute
+            while working_minute <= ts_off:
+                # Find the bucket that corresponds to this minute in our dates dict
+                for key in dates_dict.keys():
+                    # See if it falls within the 5 minutes
+                    if working_minute >= key and working_minute < (key + 300):
+                        dates_dict[key] = dates_dict[key] + 1
+                        break
+
+                working_minute = working_minute + 60
+
+        #for key in dates_dict.keys():
+        #    if dates_dict[key] == 0:
+        #        dates_dict[key] = None
+        
+        dates = list(dates_dict.keys())
+        fan_minutes = list(dates_dict.values())
+
+        dates = [format_timestamp_as_hour_time(ts) for ts in dates]
+
+        response = []
+
+        bar_chart = go.Bar(
+                x=dates,
+                y=fan_minutes,
+                #line=dict(width=2),
+            )
+
+        response.append(bar_chart)
+
+        return response
 
     def get_temperature(self, timestamp_start, timestamp_end):
         inside_data_array = self.database_client.read_inside_temperature(timestamp_start, timestamp_end)
