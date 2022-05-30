@@ -46,6 +46,9 @@ FIFTEEN_MINUTES = 900
 def timestamp():
     return round(time.time())
 
+def current_day():
+    return datetime.datetime.now().day
+
 def current_hour():
     return datetime.datetime.now().hour
 
@@ -118,6 +121,13 @@ class WebClient:
         if response.status_code != 200:
             logging.error("Error posting event: %s" % response.json())
 
+        return response.status_code == 200
+
+    def water_all(self):
+        url = SERVER_URL + '/valves/water'
+
+        response = requests.post(url)
+        
         return response.status_code == 200
 
 
@@ -420,38 +430,53 @@ class WaterQueueTask:
 
             self.valve_dict[str(next_valve_id)].open(open_duration_seconds)
 
-class WaterPlantTask:
-    def __init__(self, run_every_seconds, valve: Valve, valve_lock: ValveLock):
-        self.valve = valve
-        self.valve_lock = va
-        self.last_opened_timestamp = 0
+class WaterPlantsTask:
+
+    """
+    example schedule condition
+    {
+        'hour': 6,
+        'water_every_days': 1,
+        'water_if_temp': 50     # Didnt do this one yet
+    }
+    """
+
+    def __init__(self, run_every_seconds, web_client, schedule_conditions_list):
         self.run_every_seconds = run_every_seconds
         self.last_evaluated_timestamp = 0
-        self.client = client
-
-    def should_run(self) -> bool:
-        if timestamp() < (self.last_evaluated_timestamp + self.run_every_seconds):
-            logging.debug('Plant %s not ready for evaluation yet', self.valve.description)
-            return False
-
-        self.last_evaluated_timestamp = timestamp()
-
-        if self.valve.is_open:
-            logging.debug('Valve %s already open', self.valve.description)
-            return False
-
-        # Only water in the 9oclock hour once a day
-        if current_hour() == 9 and (self.last_opened_timestamp() - timestamp()) > 86400:
-            return True
-
-        return False
+        self.last_watered_hour = 0
+        self.last_watered_day = 0
+        self.web_client = web_client
+        self.schedule_conditions_list = schedule_conditions_list
 
     def run(self):
-        if not self.should_run():
+        if timestamp() < (self.last_evaluated_timestamp + self.run_every_seconds):
             return False
         
-        self.valve.open()
-        self.last_opened_timestamp = timestamp()
+        self.last_evaluated_timestamp = timestamp()
+        
+        for sc in self.schedule_conditions_list:
+            hour = int(sc['hour'])
+            water_every_days = int(sc['water_every_days'])
+
+            comparison = {
+                'current_day': current_day(),
+                'current_hour': current_hour(),
+                'last_watered_hour': self.last_watered_hour,
+                'last_watered_day': self.last_watered_day
+            }
+
+            logging.info('comparing %s and %s' % (json.dumps(comparison, indent=2), json.dumps(sc, indent=2)))
+
+            if current_hour() == hour \
+              and hour != self.last_watered_hour \
+              and (self.last_watered_day + water_every_days) >= current_day():
+                  self.last_watered_day = current_day()
+                  self.last_watereed_hour = current_hour()
+
+                  self.web_client.water_all()
+                  logging.info("Queued all plants to be watered.  %s" % json.dumps(sc, indent=2))         
+
         return True
 
 
@@ -558,6 +583,13 @@ valve_9 = Valve(9, PIN_VALVE_9_POWER, config.get_valve_config(9))
 
 valve_dict = {'1': valve_1, '2': valve_2, '3': valve_3, '7': valve_7, '8': valve_8, '9': valve_9}
 
+watering_schedule = [
+    {
+        'hour': 6,
+        'water_every_days': 1
+    }
+]
+
 ########################################
 ########### EXECUTE TASKS ##############
 ########################################
@@ -566,6 +598,7 @@ task_coordinator.register_task(config_sync_task)
 task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client))
 task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client))
 task_coordinator.register_task(FanTask(60, PIN_FAN_POWER, tempHumidInside, config))
+task_coordinator.register_task(WaterPlantsTask(FIVE_MINUTES, web_client, watering_schedule))
 task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict))
 task_coordinator.register_task(ValveCloseTask(valve_1, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_2, valve_lock, config))
