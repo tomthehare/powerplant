@@ -17,29 +17,36 @@
 <h1 class="display-2">
 {{ date_start + ' - ' + date_end }}
 </h1>
+
+<div class="row">
+	<div class="col-md-16">
+	    <h2><a href="/scatter">1 Day</a> | <a href="/scatter?hours_back=72">3 Days</a> | <a href="/scatter?hours_back=168">7 Days</a></h2>
+	</div>
+</div>
 <div class="container-fluid">
-	<div class="row">
-        <div class="col-md-50">
-            <div class="chart" id="scatter1">
-           	<script>
-               		 var graphs = {{plot1 | safe}};
-               		 Plotly.plot('scatter1',graphs,{});
-            	</script>
-            </div>
-        </div>
-	</div>
-	<div class="row">
-		<div class="col-md-16">
-		    <h2><a href="/scatter">1 Day</a> | <a href="/scatter?hours_back=72">3 Days</a> | <a href="/scatter?hours_back=168">7 Days</a></h2>
-		</div>
-	</div>
+	<h2>TEMPERATURE</h2>
 	<div class="row">
 		<div class="col-md-50">
-			<h2>Inside temp: {{ inside_temp }}</h2>
-		   	<h2>Outside temp: {{ outside_temp }}</h2>
-		    	<h2>Delta temp: {{ delta_temp }}</h2>
-		   	<h2>Fan Temp: {{ fan_temp }}</h2>
+			<h3>Inside: {{ inside_temp }} | Outside: {{ outside_temp }} | Delta: {{ delta_temp }}</h3>
 		</div>
+	</div>
+	<div class="row">
+	        <div class="col-md-50">
+	            <div class="chart" id="scatter1">
+		           	<script>
+		               		var graphs = {{plot1 | safe}};
+					Plotly.plot(
+						'scatter1',
+						graphs,
+							{
+								"title": "Temperatures F", 
+								"xaxis": {"title": "Date and Time"},
+								"yaxis": {"title": "Degrees F"}
+							}
+					);
+            			</script>
+            		</div>
+        	</div>
 	</div>
     <hr />
     <h2>WATER</h2>
@@ -47,54 +54,96 @@
 	    {%for valve in valve_config_list%}
 	    	<tr>
 			<form action="valves/{{ valve['valve_id'] }}/water" method="post">
-				<th><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></th>
-				<th><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></th>
-	    			<th><input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" /></th>
-	    			<th><input type="submit" value="Set Queue"></th>
+				<td><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></td>
+				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+	    			<input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" />
+				<td><input type="submit" value="Set Queue"></td>
 		   	</form>
 		</tr>
 	    {%endfor%}
 
     		<tr>
+	    		<form action="valves/water_tomatoes" method="post">
+				<td><label for="valves_tomatoes">Water Tomatoes:</label></td>
+				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+				<td><input type="submit" value="Queue Tomatoes"></td>
+	    		</form>
+    		</tr>
+    		<tr>
 	    		<form action="valves/water" method="post">
-				<th><label for="valves_all">Water All:</label></th>
-				<th><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></th>
-				<th><input type="submit" value="Queue All"></th>
+				<td><label for="valves_all">Water All:</label></td>
+				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+				<td><input type="submit" value="Queue All"></td>
 	    		</form>
     		</tr>
     </table>
     <h3>
-	    Current Queue
+	    Current Watering Queue
     </h3>
     <div>
 	    <div class="col-md-6">
-		<ul>
-			<!-- For loop logic of jinja template -->
-			{%for entry in watering_queue%}
-				<li>{{ entry['valve_description'] }} - {{ entry['open_duration_seconds'] }} seconds</li>
-			{%endfor%}
-		</ul>    
+			{% if watering_queue %}
+			<ul>
+				{%for entry in watering_queue%}
+					<li>{{ entry['valve_description'] }} - {{ entry['open_duration_seconds'] }} seconds</li>
+				{%endfor%}
+			</ul>
+			{%endif%}
+			{% if not watering_queue %}
+				Nothing in queue
+			{%endif%}   
 	    </div>
     </div>
+	<div class="row">
 
-    <h2>FAN</h2>
-    <div>
+	    <h2>FAN</h2>
+	        <div class="col-md-50">
+            		<div class="chart" id="bar1">
+           			<script>
+               		 		var graphs = {{fan_data_object | safe}};
+               		 		Plotly.plot(
+						'bar1',
+						graphs,	
+						{
+							"title": "Fan Runtime", 
+							"xaxis": {"title": "Date and Time"},
+							"yaxis": {"title": "Cumulative Minutes"}
+						}
+					);
+		            	</script>
+		            </div>
+	        </div>
+	</div>
+    <h3>Fan Runs at {{ fan_temp }} degrees F</h3>
+    <div class="row">
 	    <div class="col-md-6">
 		    <form action="/fan-config/temp" method="post">
-			<label for="fan_temp">Fan temp:</label>
+			<label for="fan_temp">Update fan temp:</label>
 			<input type="text" value="{{ fan_temp  }}" id="fan_temp" name="fan_temp">
 			<input type="submit" value="Submit"> 
 		    </form>
 	    </div>
     </div>
-    <br />
-    
-            <div class="chart" id="bar1">
-           	<script>
-               		 var bar_graphs = {{fan_data_object | safe}};
-               		 Plotly.plot('bar1', bar_graphs,{});
-            	</script>
-            </div>
+    <h3>Fan Events</h3>
+    <div class="row">
+	    <div class="col-md-6">
+		    <table>
+			<tr>
+				<th>On</th>
+				<th>Off</th>
+				<th>Duration</th>
+			</tr>
+			{%for entry in fan_events%}
+			<tr>
+				<td>{{ entry['ts_on'] }}</td>	
+				<td>{{ entry['ts_off'] }}</td>	
+				<td>{{ entry['on_minutes'] }}</td>	
+			</tr>
+			{%endfor%}
+
+		    </table>
+	    </div>
+    </div>
 </div>
 </body>
 </html>

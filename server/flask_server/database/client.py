@@ -656,7 +656,9 @@ class DatabaseClient:
         FROM FanEvents
         WHERE (OnTimestamp < {ts_end} AND OffTimestamp > {ts_start}) 
         OR (OnTimestamp <= {ts_start} AND OffTimestamp > {ts_start} AND OffTimestamp <= {ts_end})
-        OR (OnTimestamp > {ts_start} AND OffTimestamp > {ts_start} AND OffTimestamp > {ts_end})
+        OR (OnTimestamp > {ts_start} AND OffTimestamp > {ts_start} AND OffTimestamp > {ts_end}) 
+        OR (OnTimestamp > {ts_start} AND OffTimestamp IS NULL)
+        ORDER BY OnTimestamp
         """.format(ts_start=ts_start, ts_end=ts_end)
 
         connection = ConnectionWrapper(self.database_name)
