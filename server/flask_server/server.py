@@ -9,6 +9,7 @@ from time_helper import format_timestamp_as_local, timestamp
 from graph_helper import GraphHelper
 import logging
 import os.path
+import math
 
 app = Flask(__name__)
 client = DatabaseClient("powerplant.db")
@@ -151,6 +152,22 @@ def get_valve_watering_queue():
 
     return Response(json.dumps(queue_data), mimetype='application/json', status=200)
 
+def water_some_stuff(valve_ids):
+    queue_data = get_watering_queue_data()
+
+    data = request.form
+
+    open_duration = data['open_duration_seconds']
+
+    for valve_id in valve_ids:
+        queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
+        queue_data.append(queue_entry)
+
+    with open('watering_queue.json', 'w') as f:
+        json.dump(queue_data, f)
+
+    return json.dumps(queue_data), 201
+
 @app.route('/valves/<valve_id>/water', methods=['POST'])
 def add_valve_queue(valve_id):
     queue_data = get_watering_queue_data()
@@ -160,35 +177,16 @@ def add_valve_queue(valve_id):
         if queue_valve_id == valve_id:
             return 'Valve already in queue', 400
 
-    data = request.form
+    return water_some_stuff([valve_id])
 
-    open_duration = data['open_duration_seconds']
+@app.route('/valves/water_tomatoes', methods=['POST'])
+def water_tomatoes():
+    return water_some_stuff([7,8,9])
 
-    queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
-
-    queue_data.append(queue_entry)
-
-    with open('watering_queue.json', 'w') as f:
-        json.dump(queue_data, f)
-
-    return json.dumps(queue_data), 201
 
 @app.route('/valves/water', methods=['POST'])
 def water_all():
-    queue_data = get_watering_queue_data()
-
-    data = request.form
-
-    open_duration = data['open_duration_seconds']
-
-    for valve_id in [1,2,3,7,8,9]:
-        queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
-        queue_data.append(queue_entry)
-
-    with open('watering_queue.json', 'w') as f:
-        json.dump(queue_data, f)
-
-    return json.dumps(queue_data), 201
+    return water_some_stuff([1,2,3,7,8,9])
 
 
 @app.route('/valves/watering-queue/<valve_id>', methods=['DELETE'])
@@ -329,8 +327,37 @@ def scatter():
     watering_queue = get_watering_queue_detailed()
     valve_config = get_valve_config_dict()
 
-    fan_data_object = graph_helper.get_fan_data(date_start, date_end)
-    
+    fan_data_object = graph_helper.get_fan_data(date_start, date_end, 3600)
+    fan_on_off_data = client.read_fan_data(date_start, date_end)
+
+    _logger.info(json.dumps(fan_on_off_data, indent=2))
+
+    fan_events = []
+    for event_hash, ts_on, ts_off in fan_on_off_data:
+        if ts_off is None:
+            ts_off = round(time.time())
+
+        minutes_on_total = round(((ts_off-ts_on) / 60))
+        
+        hours_on = math.floor(minutes_on_total / 60)
+        minutes_remainder = minutes_on_total % 60
+
+        human_time_string = ""
+        if hours_on > 0:
+            human_time_string = "%d hours " % hours_on
+
+        human_time_string = human_time_string + ("%d minutes" % minutes_remainder)
+
+        fan_events.append(
+            {
+                'ts_on': format_timestamp_as_local(ts_on), 
+                'ts_off': format_timestamp_as_local(ts_off),
+                'on_minutes': human_time_string
+            }
+        )
+
+    fan_events.reverse()
+
     return render_template(
         "scatter.html",
         date_start=format_timestamp_as_local(date_start),
@@ -342,7 +369,8 @@ def scatter():
         fan_temp=fan_config['fan_temp'],
         watering_queue=watering_queue,
         valve_config_list=valve_config,
-        fan_data_object=fan_data_object
+        fan_data_object=fan_data_object,
+        fan_events=fan_events
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])
