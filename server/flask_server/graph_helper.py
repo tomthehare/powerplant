@@ -111,7 +111,49 @@ class GraphHelper:
             cls=plotly.utils.PlotlyJSONEncoder,
         )	
 
-    def get_temperature(self, timestamp_start, timestamp_end):
+
+    def get_humidity_graph_object(self, timestamp_start, timestamp_end):
+        inside_data_array = self.database_client.read_inside_humidity(timestamp_start, timestamp_end)
+        outside_data_array = self.database_client.read_outside_humidity(timestamp_start, timestamp_end)
+
+        snapped_inside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, inside_data_array)
+        snapped_outside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, outside_data_array)
+
+        inside_dates = list(snapped_inside.keys())
+        inside_humidities = list(snapped_inside.values())
+
+        outside_dates = list(snapped_outside.keys())
+        outside_humidities = list(snapped_outside.values())
+
+        inside_dates = [format_timestamp_as_hour_time(ts) for ts in inside_dates]
+        outside_dates = [format_timestamp_as_hour_time(ts) for ts in outside_dates]
+
+        response = []
+
+        scatter_inside = go.Scatter(
+                x=inside_dates,
+                y=inside_humidities,
+                name='Inside Humidity',
+                line=dict(width=2),
+            )
+
+        response.append(scatter_inside)
+
+        scatter_outside = go.Scatter(
+                x=outside_dates,
+                y=outside_humidities,
+                name='Outside Humidity',
+                line=dict(width=2),
+            )
+
+        response.append(scatter_outside)
+
+        return json.dumps(
+            response,
+            cls=plotly.utils.PlotlyJSONEncoder,
+        )	
+        
+    def get_temperature_graph_object(self, timestamp_start, timestamp_end):
         inside_data_array = self.database_client.read_inside_temperature(timestamp_start, timestamp_end)
         outside_data_array = self.database_client.read_outside_temperature(timestamp_start, timestamp_end)
 

@@ -157,7 +157,11 @@ def water_some_stuff(valve_ids):
 
     data = request.form
 
-    open_duration = data['open_duration_seconds']
+    if 'open_duration_seconds' in data:
+        open_duration = data['open_duration_seconds']
+    else:
+        _logger.info('Defaulting open duration seconds to 60 as it was not passed in.')
+        open_duration = 60
 
     for valve_id in valve_ids:
         queue_entry = {'valve_id': valve_id, 'open_duration_seconds': open_duration}
@@ -186,8 +190,7 @@ def water_tomatoes():
 
 @app.route('/valves/water', methods=['POST'])
 def water_all():
-    return water_some_stuff([1,2,3,7,8,9])
-
+    return water_some_stuff([1,2,3,5,7,8,9])
 
 @app.route('/valves/watering-queue/<valve_id>', methods=['DELETE'])
 def remove_watering_queue(valve_id):
@@ -307,14 +310,16 @@ def get_valve_description(valve_id):
 @app.route('/scatter', methods=['GET'])
 def scatter():
     hours_back = request.args.get("hours_back", default=24, type=int)
-    _logger.info("hours back was %d" % hours_back)
 
     date_start = round(time.time() - (3600 * hours_back))
     date_end = round(time.time())
     
-    plot_object = graph_helper.get_temperature(date_start, date_end)
+    temp_plot_object = graph_helper.get_temperature_graph_object(date_start, date_end)
+    humid_plot_object = graph_helper.get_humidity_graph_object(date_start, date_end)
 
     summary_details = get_summary_dictionary()
+
+    _logger.info(json.dumps(summary_details, indent=2))
 
     if not summary_details:
         inside_temperature = '?'
@@ -322,6 +327,8 @@ def scatter():
     else:
         inside_temperature = summary_details['Inside Temperature']['InsideDegreesF']
         outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']
+        inside_humidity = summary_details['Inside Humidity']['InsidePercentage']
+        outside_humidity = summary_details['Outside Humidity']['OutsidePercentage']
 
     fan_config = read_fan_config()
     watering_queue = get_watering_queue_detailed()
@@ -329,8 +336,6 @@ def scatter():
 
     fan_data_object = graph_helper.get_fan_data(date_start, date_end, 3600)
     fan_on_off_data = client.read_fan_data(date_start, date_end)
-
-    _logger.info(json.dumps(fan_on_off_data, indent=2))
 
     fan_events = []
     for event_hash, ts_on, ts_off in fan_on_off_data:
@@ -362,10 +367,14 @@ def scatter():
         "scatter.html",
         date_start=format_timestamp_as_local(date_start),
         date_end=format_timestamp_as_local(date_end),
-        plot1=plot_object,
+        temp_plot=temp_plot_object,
+        humid_plot=humid_plot_object,
         inside_temp=inside_temperature,
         outside_temp=outside_temperature,
         delta_temp=round(inside_temperature - outside_temperature, 1),
+        inside_humidity=inside_humidity,
+        outside_humidity=outside_humidity,
+        delta_humidity=round(inside_humidity - outside_humidity, 1),
         fan_temp=fan_config['fan_temp'],
         watering_queue=watering_queue,
         valve_config_list=valve_config,
