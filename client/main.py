@@ -27,7 +27,7 @@ PIN_VALVE_1_POWER = 26
 PIN_VALVE_2_POWER = 6
 PIN_VALVE_3_POWER = 5
 PIN_VALVE_4_POWER = -1
-PIN_VALVE_5_POWER = -1
+PIN_VALVE_5_POWER = 12
 PIN_VALVE_6_POWER = -1
 PIN_VALVE_7_POWER = 21
 PIN_VALVE_8_POWER = 20
@@ -47,7 +47,7 @@ def timestamp():
     return round(time.time())
 
 def current_day():
-    return datetime.datetime.now().day
+    return datetime.date.today().timetuple().tm_yday
 
 def current_hour():
     return datetime.datetime.now().hour
@@ -258,7 +258,7 @@ class TempHumidSensor:
             logging.error('Unable to read temp/humidity on pin %d', self.data_pin)
             raise Exception('Unable to read sensor')
 
-class FanTask:
+class AtticFanTask:
     def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config):
         self.temp_humid_sensor = temp_humid_sensor
         self.run_every_seconds = run_every_seconds
@@ -449,6 +449,25 @@ class WaterPlantsTask:
         self.web_client = web_client
         self.schedule_conditions_list = schedule_conditions_list
 
+        self.load_data()
+
+    def persist_data(self, last_watered_hour, last_watered_day):
+        data = {'last_watered_hour': last_watered_hour, 'last_watered_day': last_watered_day}
+
+        with open('water_plants_task.json', 'w') as f:
+            json.dump(data, f)
+
+    def load_data(self):
+        if os.path.exists('water_plants_task.json'):
+            with open('water_plants_task.json', 'r') as f:
+                data = json.load(f)
+
+            self.last_watered_hour = data['last_watered_hour']
+            self.last_watered_day = data['last_watered_day']
+
+            logging.info('loaded last watered schedule: %s' % json.dumps(data, indent=2))
+
+
     def run(self):
         if timestamp() < (self.last_evaluated_timestamp + self.run_every_seconds):
             return False
@@ -470,9 +489,12 @@ class WaterPlantsTask:
 
             if current_hour() == hour \
               and hour != self.last_watered_hour \
-              and (self.last_watered_day + water_every_days) >= current_day():
+              and current_day() >= (self.last_watered_day + water_every_days):
                   self.last_watered_day = current_day()
-                  self.last_watereed_hour = current_hour()
+                  self.last_watered_hour = current_hour()
+
+                  # Persist last watered hour and day in order to ensure we don't double water if something goes wrong.
+                  self.persist_data(self.last_watered_hour, self.last_watered_day) 
 
                   self.web_client.water_all()
                   logging.info("Queued all plants to be watered.  %s" % json.dumps(sc, indent=2))         
@@ -577,15 +599,24 @@ valve_lock = ValveLock()
 valve_1 = Valve(1, PIN_VALVE_1_POWER, config.get_valve_config(1))
 valve_2 = Valve(2, PIN_VALVE_2_POWER, config.get_valve_config(2))
 valve_3 = Valve(3, PIN_VALVE_3_POWER, config.get_valve_config(3))
+valve_5 = Valve(5, PIN_VALVE_5_POWER, config.get_valve_config(5))
 valve_7 = Valve(7, PIN_VALVE_7_POWER, config.get_valve_config(7))
 valve_8 = Valve(8, PIN_VALVE_8_POWER, config.get_valve_config(8))
 valve_9 = Valve(9, PIN_VALVE_9_POWER, config.get_valve_config(9))
 
-valve_dict = {'1': valve_1, '2': valve_2, '3': valve_3, '7': valve_7, '8': valve_8, '9': valve_9}
+valve_dict = {
+        '1': valve_1, 
+        '2': valve_2, 
+        '3': valve_3, 
+        '5': valve_5,
+        '7': valve_7, 
+        '8': valve_8, 
+        '9': valve_9
+}
 
 watering_schedule = [
     {
-        'hour': 6,
+        'hour': 7,
         'water_every_days': 1
     }
 ]
@@ -597,12 +628,13 @@ watering_schedule = [
 task_coordinator.register_task(config_sync_task)
 task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client))
 task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client))
-task_coordinator.register_task(FanTask(60, PIN_FAN_POWER, tempHumidInside, config))
-task_coordinator.register_task(WaterPlantsTask(FIVE_MINUTES, web_client, watering_schedule))
+task_coordinator.register_task(AtticFanTask(60, PIN_FAN_POWER, tempHumidInside, config))
+#task_coordinator.register_task(WaterPlantsTask(TEN_MINUTES, web_client, watering_schedule))
 task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict))
 task_coordinator.register_task(ValveCloseTask(valve_1, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_2, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_3, valve_lock, config))
+task_coordinator.register_task(ValveCloseTask(valve_5, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_7, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_8, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_9, valve_lock, config))
