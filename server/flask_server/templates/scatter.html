@@ -34,7 +34,7 @@
 	        <div class="col-md-50">
 	            <div class="chart" id="scatter1">
 		           	<script>
-		               		var graphs = {{plot1 | safe}};
+		               		var graphs = {{temp_plot | safe}};
 					Plotly.plot(
 						'scatter1',
 						graphs,
@@ -48,39 +48,66 @@
             		</div>
         	</div>
 	</div>
-    <hr />
-    <h2>WATER</h2>
-    <table>
-	    {%for valve in valve_config_list%}
-	    	<tr>
-			<form action="valves/{{ valve['valve_id'] }}/water" method="post">
-				<td><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></td>
-				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
-	    			<input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" />
-				<td><input type="submit" value="Set Queue"></td>
-		   	</form>
-		</tr>
-	    {%endfor%}
-
-    		<tr>
-	    		<form action="valves/water_tomatoes" method="post">
-				<td><label for="valves_tomatoes">Water Tomatoes:</label></td>
-				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
-				<td><input type="submit" value="Queue Tomatoes"></td>
-	    		</form>
-    		</tr>
-    		<tr>
-	    		<form action="valves/water" method="post">
-				<td><label for="valves_all">Water All:</label></td>
-				<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
-				<td><input type="submit" value="Queue All"></td>
-	    		</form>
-    		</tr>
-    </table>
+	<hr />
+	<h2>HUMIDITY</h2>
+	<div class="row">
+		<div class="col-md-50">
+			<h3>Inside: {{ inside_humidity }}% | Outside: {{ outside_humidity }}% | Delta: {{ delta_humidity }}%</h3>
+		</div>
+	</div>
+	<div class="row">
+	        <div class="col-md-50">
+	            <div class="chart" id="scatter2">
+		           	<script>
+		               		var graphs = {{humid_plot | safe}};
+					Plotly.plot(
+						'scatter2',
+						graphs,
+							{
+								"title": "Humidity", 
+								"xaxis": {"title": "Date and Time"},
+								"yaxis": {"title": "Humidity %"}
+							}
+					);
+            			</script>
+            		</div>
+        	</div>
+	</div>
+	<hr />
+	<h2>WATER</h2>
+	<div class="row">
+    		<table>
+		    {%for valve in valve_config_list%}
+		    	<tr>
+				<form action="valves/{{ valve['valve_id'] }}/water" method="post">
+					<td><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></td>
+					<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+	    				<input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" />
+					<td><input type="submit" value="Set Queue"></td>
+			   	</form>
+			</tr>
+		    {%endfor%}
+	
+    			<tr>
+		    		<form action="valves/water_tomatoes" method="post">
+					<td><label for="valves_tomatoes">Water Tomatoes:</label></td>
+					<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+					<td><input type="submit" value="Queue Tomatoes"></td>
+		    		</form>
+    			</tr>
+    			<tr>
+		    		<form action="valves/water" method="post">
+					<td><label for="valves_all">Water All:</label></td>
+					<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
+					<td><input type="submit" value="Queue All"></td>
+	    			</form>
+    			</tr>
+    	</table>
+    </div>
     <h3>
 	    Current Watering Queue
     </h3>
-    <div>
+    <div class="row">
 	    <div class="col-md-6">
 			{% if watering_queue %}
 			<ul>
