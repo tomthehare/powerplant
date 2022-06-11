@@ -32,6 +32,7 @@ PIN_VALVE_6_POWER = -1
 PIN_VALVE_7_POWER = 21
 PIN_VALVE_8_POWER = 20
 PIN_VALVE_9_POWER = 16
+PIN_CIRC_FAN_POWER = 2
 
 PIN_GROW_LIGHT_POWER = -1
 
@@ -72,6 +73,9 @@ class TempHumidReading:
 
     def get_heat_index(self):
         return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
+    
+    def to_string(self):
+        return json.dumps({'temperature': self.get_temperature(), 'humidity': self.get_humidity()}, indent=2)
         
 
 class WebClient:
@@ -132,14 +136,12 @@ class WebClient:
 
 
 class ValveConfig:
-
     def __init__(self, id):
         self.id = id
         self.description = ''
         self.conductivity_threshold = 1.0
         self.watering_delay_seconds = -1
         self.open_duration_seconds = -1
-
 
 class Config:
     def __init__(self):
@@ -258,6 +260,46 @@ class TempHumidSensor:
             logging.error('Unable to read temp/humidity on pin %d', self.data_pin)
             raise Exception('Unable to read sensor')
 
+class CirculatorFansTask:
+    def __init__(self, run_every_seconds, power_pin, on_every_seconds, run_duration_seconds):
+        self.run_every_seconds = run_every_seconds
+        self.power_pin = power_pin
+        self.on_every_seconds = on_every_seconds
+        self.run_duration_seconds = run_duration_seconds
+        self.last_check_ts = 0
+        self.last_circ_ts = 0
+        self.is_on = False
+
+        GPIO.setup(self.power_pin, GPIO.OUT)
+        GPIO.output(self.power_pin, GPIO.HIGH)
+
+    def run(self):
+        if timestamp() < (self.last_check_ts  + self.run_every_seconds):
+            return
+
+        self.last_check_ts = timestamp()
+
+        if not self.is_on and timestamp() > (self.last_circ_ts + self.on_every_seconds):
+            self.turn_on()
+            self.last_circ_ts = timestamp()
+        elif self.is_on and timestamp() > (self.last_circ_ts + self.run_duration_seconds):
+            self.turn_off()
+
+    def turn_on(self):       
+        GPIO.output(self.power_pin, GPIO.LOW)
+        self.is_on = True
+        logging.info("Turned circulation fans on")
+
+    def turn_off(self):
+        GPIO.output(self.power_pin, GPIO.HIGH)
+        self.is_on = False
+        logging.info("Turned circulation fans off")
+
+    def shutdown(self):
+        if self.is_on:
+            self.turn_off()
+
+
 class AtticFanTask:
     def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config):
         self.temp_humid_sensor = temp_humid_sensor
@@ -307,24 +349,23 @@ class AtticFanTask:
 
 class TempHumidLogTask:
 
-    def __init__(self, run_every_seconds: int, sensor: TempHumidSensor, url: str, web_client: WebClient):
+    def __init__(self, run_every_seconds: int, sensor: TempHumidSensor, url: str, web_client: WebClient, location):
         self.run_every_seconds = run_every_seconds
         self.sensor = sensor
         self.last_run_ts = 0
         self.url = url
         self.web_client = web_client
+        self.location = location
 
     def should_run(self):
-        should_run = timestamp() > (self.last_run_ts + self.run_every_seconds)
-        #if not should_run:
-            #logging.debug('Not ready for temp/humidity log task on pin %d', self.sensor.data_pin)
-        return should_run
+        return timestamp() > (self.last_run_ts + self.run_every_seconds)
 
     def run(self) -> bool:
         if not self.should_run():
             return False
 
         reading = self.sensor.read()
+        logging.info('read temp/humid at %s: %s' % (self.location, reading.to_string()))
         self.web_client.send_temp_humidity_reading(reading, self.url)
         self.last_run_ts = timestamp()
 
@@ -626,8 +667,8 @@ watering_schedule = [
 ########################################
 
 task_coordinator.register_task(config_sync_task)
-task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client))
-task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client))
+task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client, 'inside'))
+task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client, 'outside'))
 task_coordinator.register_task(AtticFanTask(60, PIN_FAN_POWER, tempHumidInside, config))
 #task_coordinator.register_task(WaterPlantsTask(TEN_MINUTES, web_client, watering_schedule))
 task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict))
@@ -639,6 +680,8 @@ task_coordinator.register_task(ValveCloseTask(valve_7, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_8, valve_lock, config))
 task_coordinator.register_task(ValveCloseTask(valve_9, valve_lock, config))
 task_coordinator.register_task(EventSendingTask(60, web_client))
+# Check every 30 seconds to run the circ fans  for 90 seconds every 10 minutes:
+task_coordinator.register_task(CirculatorFansTask(30, PIN_CIRC_FAN_POWER, TEN_MINUTES, 90))
 
 task_coordinator.run()
 
