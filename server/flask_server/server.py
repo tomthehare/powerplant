@@ -322,8 +322,10 @@ def scatter():
     _logger.info(json.dumps(summary_details, indent=2))
 
     if not summary_details:
-        inside_temperature = '?'
-        outside_temperature = '?'
+        inside_temperature = -1
+        outside_temperature = -1
+        inside_humidity = -1
+        outside_humidity = -1
     else:
         inside_temperature = summary_details['Inside Temperature']['InsideDegreesF']
         outside_temperature = summary_details['Outside Temperature']['OutsideDegreesF']

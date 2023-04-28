@@ -114,19 +114,13 @@ class GraphHelper:
 
     def get_humidity_graph_object(self, timestamp_start, timestamp_end):
         inside_data_array = self.database_client.read_inside_humidity(timestamp_start, timestamp_end)
-        outside_data_array = self.database_client.read_outside_humidity(timestamp_start, timestamp_end)
 
         snapped_inside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, inside_data_array)
-        snapped_outside = self.snap_to_5_min_buckets(timestamp_start, timestamp_end, outside_data_array)
 
         inside_dates = list(snapped_inside.keys())
         inside_humidities = list(snapped_inside.values())
 
-        outside_dates = list(snapped_outside.keys())
-        outside_humidities = list(snapped_outside.values())
-
         inside_dates = [format_timestamp_as_hour_time(ts) for ts in inside_dates]
-        outside_dates = [format_timestamp_as_hour_time(ts) for ts in outside_dates]
 
         response = []
 
@@ -138,15 +132,6 @@ class GraphHelper:
             )
 
         response.append(scatter_inside)
-
-        scatter_outside = go.Scatter(
-                x=outside_dates,
-                y=outside_humidities,
-                name='Outside Humidity',
-                line=dict(width=2),
-            )
-
-        response.append(scatter_outside)
 
         return json.dumps(
             response,
