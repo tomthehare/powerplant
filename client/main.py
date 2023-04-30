@@ -20,8 +20,8 @@ task_coordinator = TaskCoordinator()
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
-PIN_TEMP_HUMIDITY_INSIDE = 18 # NEED 
-PIN_TEMP_HUMIDITY_OUTSIDE = 15 # NEED
+PIN_TEMP_HUMIDITY_INSIDE = 21
+PIN_TEMP_HUMIDITY_OUTSIDE = 20
 PIN_FAN_POWER = 22
 PIN_PUMP_POWER = 17
 PIN_VALVE_1_POWER = 2
@@ -39,7 +39,7 @@ PIN_GROW_LIGHT_POWER = -1
 
 VALVE_CLEAR_SLEEP_SECONDS = 2
 
-SERVER_URL = 'http://192.168.86.182:5000'
+SERVER_URL = 'http://192.168.86.172:5000'
 URL_TEMP_HUMID_INSIDE = '/temp-humid-inside'
 URL_TEMP_HUMID_OUTSIDE = '/temp-humid-outside'
 
@@ -572,7 +572,7 @@ class WaterPlantsTask:
                 'last_watered_day': self.last_watered_day
             }
 
-            logging.info('comparing %s and %s' % (json.dumps(comparison, indent=2), json.dumps(sc, indent=2)))
+            logging.debug('comparing %s and %s' % (json.dumps(comparison, indent=2), json.dumps(sc, indent=2)))
 
             if current_hour() == hour \
               and hour != self.last_watered_hour \
@@ -700,8 +700,8 @@ def signal_handler(sig, frame):
 ########################################
 
 def operation_normal():
-    tempHumidInside = TempHumidSensor(PIN_TEMP_HUMIDITY_INSIDE)
-    tempHumidOutside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
+    #tempHumidInside = TempHumidSensor(PIN_TEMP_HUMIDITY_INSIDE)
+    #tempHumidOutside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
     web_client = WebClient()
 
     config = Config()
@@ -719,7 +719,7 @@ def operation_normal():
     #valve_5 = Valve(5, PIN_VALVE_5_POWER, config.get_valve_config(5))
     valve_6 = Valve(6, PIN_VALVE_6_POWER, config.get_valve_config(6))
     #valve_7 = Valve(7, PIN_VALVE_7_POWER, config.get_valve_config(7))
-    #valve_8 = Valve(8, PIN_VALVE_8_POWER, config.get_valve_config(8))
+    valve_8 = Valve(8, PIN_VALVE_8_POWER, config.get_valve_config(8))
     #valve_9 = Valve(9, PIN_VALVE_9_POWER, config.get_valve_config(9))
 
     valve_dict = {
@@ -730,16 +730,16 @@ def operation_normal():
 #        '5': valve_5,
         '6': valve_6,
 #        '7': valve_7, 
-#        '8': valve_8, 
+        '8': valve_8, 
 #        '9': valve_9
     }
 
-#    watering_schedule = [
-#        {
-#            'hour': 7,
-#            'water_every_days': 1
-#        }
-#    ]
+    watering_schedule = [
+        {
+            'hour': 7,
+            'water_every_days': 2
+        }
+    ]
     
     pump = Pump(PIN_PUMP_POWER)
 
@@ -747,7 +747,7 @@ def operation_normal():
     #task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client, 'inside'))
     #task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client, 'outside'))
     #task_coordinator.register_task(AtticFanTask(60, PIN_FAN_POWER, tempHumidInside, config))
-    #task_coordinator.register_task(WaterPlantsTask(TEN_MINUTES, web_client, watering_schedule))
+    task_coordinator.register_task(WaterPlantsTask(TEN_MINUTES, web_client, watering_schedule))
     task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump))
     #task_coordinator.register_task(ValveCloseTask(valve_1, valve_lock, config))
     #task_coordinator.register_task(ValveCloseTask(valve_2, valve_lock, config))

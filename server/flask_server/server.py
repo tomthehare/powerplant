@@ -190,7 +190,8 @@ def water_tomatoes():
 
 @app.route('/valves/water', methods=['POST'])
 def water_all():
-    return water_some_stuff([1,2,3,5,7,8,9])
+    valve_config = db_client.get_valve_config()
+    return water_some_stuff([a['valve_id'] for a in valve_config])
 
 @app.route('/valves/watering-queue/<valve_id>', methods=['DELETE'])
 def remove_watering_queue(valve_id):
