@@ -246,22 +246,40 @@ def get_summary_dictionary():
     outside_temps = client.read_outside_temperature(now - 360, now)
     outside_humids = client.read_outside_humidity(now - 360, now)
 
-    output_dict = {}
+    output_dict = {
+        'Inside Temperature': {'Time': 0, 'InsideDegreesF': 0},
+        'Inside Humidity': {'Time': 0, 'InsidePercentage': 0},
+        'Outside Temperature': {'Time': 0, 'OutsideDegreesF': 0},
+        'Outside Humidity': {'Time': 0, 'OutsidePercentage': 0}
+    }
 
-    if len(outside_temps) == 0 or len(inside_temps) == 0:
-        return ''
-    
-    inside_most_recent_temp = inside_temps[len(inside_temps)-1]
-    inside_most_recent_humid = inside_humids[len(inside_humids)-1]
+    if len(inside_temps) > 0:
+        inside_most_recent_temp = inside_temps[len(inside_temps)-1]
+        output_dict['Inside Temperature'] = {
+            'Time': format_timestamp_as_local(inside_most_recent_temp[0]), 
+            'InsideDegreesF': inside_most_recent_temp[1]
+        }
 
-    outside_most_recent_temp = outside_temps[len(outside_temps)-1]
-    outside_most_recent_humid = outside_humids[len(outside_humids)-1]
+    if len(inside_humids) > 0:
+        inside_most_recent_humid = inside_humids[len(inside_humids)-1]
+        output_dict['Inside Humidity'] = {
+            'Time': format_timestamp_as_local(inside_most_recent_humid[0]), 
+            'InsidePercentage': inside_most_recent_humid[1]
+        }
 
-    output_dict['Inside Temperature'] = {'Time': format_timestamp_as_local(inside_most_recent_temp[0]), 'InsideDegreesF': inside_most_recent_temp[1]}
-    output_dict['Inside Humidity'] = {'Time': format_timestamp_as_local(inside_most_recent_humid[0]), 'InsidePercentage': inside_most_recent_humid[1]}
+    if len(outside_temps) > 0:
+        outside_most_recent_temp = outside_temps[len(outside_temps)-1]
+        output_dict['Outside Temperature'] = {
+            'Time': format_timestamp_as_local(outside_most_recent_temp[0]), 
+            'OutsideDegreesF': outside_most_recent_temp[1]
+        }
 
-    output_dict['Outside Temperature'] = {'Time': format_timestamp_as_local(outside_most_recent_temp[0]), 'OutsideDegreesF': outside_most_recent_temp[1]}
-    output_dict['Outside Humidity'] = {'Time': format_timestamp_as_local(outside_most_recent_humid[0]), 'OutsidePercentage': outside_most_recent_humid[1]}
+    if len(outside_humids) > 0:
+        outside_most_recent_humid = outside_humids[len(outside_humids)-1]
+        output_dict['Outside Humidity'] = {
+            'Time': format_timestamp_as_local(outside_most_recent_humid[0]), 
+            'OutsidePercentage': outside_most_recent_humid[1]
+        }
 
     return output_dict
 

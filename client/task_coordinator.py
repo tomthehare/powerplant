@@ -28,7 +28,7 @@ class TaskCoordinator:
                     print(exc_type, fname, exc_tb.tb_lineno)
                     traceback.print_exc()
 
-            time.sleep(5);
+            time.sleep(0.5);
 
     def shutdown(self):
         self.enabled = False
