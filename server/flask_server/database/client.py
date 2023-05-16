@@ -625,6 +625,35 @@ class DatabaseClient:
 
         return results != []
 
+    def get_last_valve_event(self, valve_id):
+        sql = """
+        SELECT OpenTimestamp, ClosedTimestamp, vc.Description
+        FROM ValveEvents ve
+        INNER JOIN ValveCatalog vc ON vc.ValveID = ve.ValveID 
+        WHERE ve.ValveID = {valve_id}
+        ORDER BY OpenTimestamp DESC
+        LIMIT 1;
+        """.format(valve_id=valve_id)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+
+            if results:
+                return {
+                    'name': results[0][2],
+                    'opened': results[0][0],
+                    'closed': results[0][1]
+                }
+            else:
+                return None
+        finally:
+            connection.wrap_it_up()
+
+        return None
+
     def insert_valve_open_event(self, valve_id, timestamp, sync_hash):
         sql = """
         INSERT INTO ValveEvents (EventHash, ValveID, OpenTimestamp, ClosedTimestamp)

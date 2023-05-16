@@ -22,6 +22,9 @@
 			width: 80%;
 			margin: 0 auto;
 		}
+		table, tr, td {
+			border: 1px solid;
+		}
     </style>
 </head>
 <body>
@@ -32,7 +35,7 @@
 <div class="row">
 	<div class="col-md-16">
 	    <h2>
-		<a href="/scatter?hours_back=12">Half Day</a>
+		<a href="/scatter?hours_back=12">Half Day</a> | 
 		<a href="/scatter">1 Day</a> | 
 		<a href="/scatter?hours_back=72">3 Days</a> | 
 		<a href="/scatter?hours_back=168">7 Days</a>
@@ -64,7 +67,6 @@
             		</div>
         	</div>
 	</div>
-	<hr />
 	<h2>HUMIDITY</h2>
 	<div class="row">
 		<div class="col-md-50">
@@ -91,6 +93,124 @@
 	</div>
 	<hr />
 	<h2>WATER</h2>
+	<hr />
+	<div class="row">
+		<table border="1px">
+			<tr>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Name: {{ valve_history[2]['name'] }}
+								<br />
+								ID: 2
+								<br />
+								Last Opened: {{ valve_history[2]['delta_closed'] }}
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Utility
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Aisle
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Name: {{ valve_history[6]['name'] }}
+								<br />
+								ID: 6
+								<br />
+								Last Opened: {{ valve_history[6]['delta_closed'] }}
+
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Name: {{ valve_history[3]['name'] }}
+								<br />
+								ID: 3
+								<br />
+								Last Opened: {{ valve_history[3]['delta_closed'] }}
+
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Name: {{ valve_history[4]['name'] }}
+								<br />
+								ID: 4
+								<br />
+								Last Opened: {{ valve_history[4]['delta_closed'] }}
+							</td>
+						</tr>
+
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Aisle
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+					<table>
+						<tr>
+							<td>
+								Name: {{ valve_history[8]['name'] }}
+								<br />
+								ID: 8
+								<br />
+								Last Opened: {{ valve_history[8]['delta_closed'] }}
+
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Name: {{ valve_history[5]['name'] }}
+								<br />
+								ID: 5
+								<br />
+								Last Opened: {{ valve_history[5]['delta_closed'] }}
+
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Name: {{ valve_history[7]['name'] }}
+								<br />
+								ID: 7
+								<br />
+								Last Opened: {{ valve_history[7]['delta_closed'] }}
+
+							</td>
+						</tr>
+
+					</table>
+				</td>
+
+			</tr>
+		</table>
+	</div>
+
 	<div class="row">
     		<table>
 		    {%for valve in valve_config_list%}

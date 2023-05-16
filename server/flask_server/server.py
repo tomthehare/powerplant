@@ -5,7 +5,7 @@ import json
 from json2html import *
 from database.client import DatabaseClient
 import pytz
-from time_helper import format_timestamp_as_local, timestamp
+from time_helper import format_timestamp_as_local, timestamp, format_delta
 from graph_helper import GraphHelper
 import logging
 import os.path
@@ -355,6 +355,14 @@ def scatter():
     watering_queue = get_watering_queue_detailed()
     valve_config = get_valve_config_dict()
 
+    valve_history = {}
+    for valve_dict in valve_config:
+        valve_id = valve_dict['valve_id']
+        valve_history[valve_id] = db_client.get_last_valve_event(valve_id)
+        valve_history[valve_id]['delta_closed'] = format_delta(timestamp() - valve_history[valve_id]['closed'])
+
+    print(valve_history)
+
     fan_data_object = graph_helper.get_fan_data(date_start, date_end, 3600)
     fan_on_off_data = client.read_fan_data(date_start, date_end)
 
@@ -400,7 +408,8 @@ def scatter():
         watering_queue=watering_queue,
         valve_config_list=valve_config,
         fan_data_object=fan_data_object,
-        fan_events=fan_events
+        fan_events=fan_events,
+        valve_history=valve_history
     )
 
 @app.route('/record-soil-conductivity', methods = ['POST'])

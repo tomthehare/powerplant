@@ -66,6 +66,7 @@ class TempHumidReading:
     def __init__(self, temp, humid):
         self.temp_c = temp
         self.humid = humid
+        self.read_at_ts = timestamp()
 
     def get_temp(self):
         return round((9 * self.temp_c) / 5 + 32, 1)
@@ -260,6 +261,7 @@ class TempHumidSensor:
         logging.info('Setting up temperature/humidity sensor on data pin %d', pin)
         self.data_pin = pin
         self.last_read_ts = 0
+        self.last_reading = None
 
     def read(self):
         if (self.last_read_ts + 2) >= timestamp():
@@ -272,10 +274,14 @@ class TempHumidSensor:
         logging.debug('Read temp and humidity on pin %d: %f *F, %f percent Humidity', self.data_pin, temperature, humidity)
 
         if humidity is not None and temperature is not None:
-            return TempHumidReading(temperature, humidity)
+            self.last_reading = TempHumidReading(temperature, humidity)
+            return self.last_reading
         else:
             logging.error('Unable to read temp/humidity on pin %d', self.data_pin)
             raise Exception('Unable to read sensor')
+
+    def get_last_reading(self):
+        return self.last_reading
 
 class CirculatorFansTask:
     def __init__(self, run_every_seconds, power_pin, on_every_seconds, run_duration_seconds):
@@ -318,13 +324,14 @@ class CirculatorFansTask:
 
 
 class AtticFanTask:
-    def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config):
+    def __init__(self, run_every_seconds, power_pin, temp_humid_sensor: TempHumidSensor, config, windows):
         self.temp_humid_sensor = temp_humid_sensor
         self.run_every_seconds = run_every_seconds
         self.power_pin = power_pin
         self.is_on = False
         self.last_run_ts = 0
         self.config = config
+        self.windows = windows
 
         logging.info('Setting up fan on pin %d', self.power_pin)
 
@@ -337,7 +344,7 @@ class AtticFanTask:
  
         self.last_run_ts = timestamp()
 
-        temp_now = self.temp_humid_sensor.read()
+        temp_now = self.temp_humid_sensor.get_last_reading()
 
         if not temp_now:
             return
@@ -347,11 +354,23 @@ class AtticFanTask:
         logging.debug('(fan) Current temp: ' + str(temp_f_now))
         logging.debug('(fan) Fan is: ' + ('on' if self.is_on else 'off'))
 
+        # If windows are closed and the temperature has crept to 5 degrees before fan comes on, open the windows
+        if not self.windows.eligible_for_open() and temp_f_now > self.config.fan_temp - 5:
+            self.windows.open()
+
         if self.is_on and temp_f_now < self.config.fan_temp:
             self.turn_off()
+
+            ## If it's likely the last fan of the day, close the windows to try to keep heat in.
+            if self.windows.eligible_for_close() and current_hour() > 16:
+                self.windows.close()
+
         elif not self.is_on and temp_f_now > self.config.fan_temp:
             self.turn_on()            
 
+        # ultimate fallback
+        if self.windows.eligible_for_close() and temp_f_now < self.config.fan_temp - 5:
+            self.windows.close()
 
     def turn_on(self):       
         GPIO.output(self.power_pin, GPIO.LOW)
@@ -465,12 +484,13 @@ class Pump:
         logging.info("Turned off pump")
 
 class Window:
-    def __init__(self, input_a, input_b, descriptor):
+    def __init__(self, input_a, input_b, descriptor, movement_seconds):
         self.input_a = input_a
         self.input_b = input_b
         self.descriptor = descriptor
+        self.movement_seconds = movement_seconds
 
-        self.is_open = False
+        self.is_open = None
 
         GPIO.setup(self.input_a, GPIO.OUT)
         GPIO.output(self.input_a, GPIO.LOW)
@@ -480,58 +500,73 @@ class Window:
 
         logging.info("Setting up %s on pins %d and %d" % (self.descriptor, self.input_a, self.input_b))
 
+    def eligible_for_open(self):
+        return self.is_open is None or self.is_open == False
+
+    def eligible_for_close(self):
+        return self.is_open is None or self.is_open == True
+
     def open(self):
-        if self.is_open:
+        if not self.eligible_for_open():
             logging.info("Window %s is already open" % self.descriptor)
             return
 
         logging.info("Opening window %s" % self.descriptor)
         GPIO.output(self.input_a, GPIO.HIGH)
         GPIO.output(self.input_b, GPIO.LOW)
-        time.sleep(2)
+        time.sleep(self.movement_seconds)
         GPIO.output(self.input_a, GPIO.LOW)
         self.is_open = True
 
     def close(self):
-        if not self.is_open:
+        if not self.eligible_for_close():
             logging.info("Window %s already closed" % self.descriptor)
             return
 
         logging.info("Closing window %s" % self.descriptor)
         GPIO.output(self.input_a, GPIO.LOW)
         GPIO.output(self.input_b, GPIO.HIGH)
-        time.sleep(2)
+        time.sleep(self.movement_seconds)
         GPIO.output(self.input_b, GPIO.LOW)
         self.is_open = False
 
 
-class WindowsTask:
-    def __init__(self, windows_list, run_every_seconds):
+class WindowsGroup:
+    def __init__(self, windows_list):
        self.windows = windows_list
-       self.last_run_ts = 0
-       self.run_every_seconds = run_every_seconds
-       self.windows_are_open = False
+       self.windows_are_open = None
+    
+    def eligible_for_open(self):
+        if self.windows_are_open is None or self.windows_are_open == False:
+            return True
 
-    def should_run(self):      
-        return timestamp() > (self.last_run_ts + self.run_every_seconds)
+        return False
 
-    def run(self):
-        if not self.should_run():
+    def eligible_for_close(self):
+        if self.windows_are_open is None or self.windows_are_open == True:
+            return True
+        return False
+
+    def open(self):
+        if not self.eligible_for_open():
+            logging.info("Windows are already open")
             return
 
-        self.last_run_ts = timestamp()
-        
-        if self.windows_are_open:
-            logging.info("closing the windows according to time schedule")
-            for window in self.windows:
-                window.close()
-            self.windows_are_open = False
-        else:
-            logging.info("opening the windows according to time schedule")
-            for window in self.windows:
-                window.open()
-            self.windows_are_open = True
-            
+        for window in self.windows:
+            window.open()
+
+        self.windows_are_open = True
+   
+    def close(self):
+        if not self.eligible_for_close():
+           logging.info("Windows are already closed")
+           return
+
+        for window in self.windows:
+            window.close()
+
+        self.windows_are_open = False
+
 
 class ValveCloseTask:
     def __init__(self, valve: Valve, valve_lock: ValveLock, config, pump: Pump):
@@ -824,17 +859,18 @@ def operation_normal():
     watering_schedule = [
         {
             'hour': 7,
-            'water_every_days': 2
+            'water_every_days': 1
         }
     ]
     
     pump = Pump(PIN_PUMP_POWER)
 
-    window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]')
+    window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]', 20)
+    windows_group = WindowsGroup([window_se])
 
     task_coordinator.register_task(config_sync_task)
-    task_coordinator.register_task(AtticFanTask(60, PIN_FAN_POWER, tempHumidInside, config))
     task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client, 'inside'))
+    task_coordinator.register_task(AtticFanTask(60, PIN_FAN_POWER, tempHumidInside, config, windows_group))
     #task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidOutside, SERVER_URL + URL_TEMP_HUMID_OUTSIDE, web_client, 'outside'))
     task_coordinator.register_task(WaterPlantsTask(TEN_MINUTES, web_client, watering_schedule))
     task_coordinator.register_task(WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump))
@@ -847,7 +883,6 @@ def operation_normal():
     task_coordinator.register_task(ValveCloseTask(valve_7, valve_lock, config, pump))
     task_coordinator.register_task(ValveCloseTask(valve_8, valve_lock, config, pump))
     task_coordinator.register_task(EventSendingTask(60, web_client))
-    #task_coordinator.register_task(WindowsTask([window_se], 30))
     ## Check every 30 seconds to run the circ fans  for 90 seconds every 10 minutes:
     #task_coordinator.register_task(CirculatorFansTask(30, PIN_CIRC_FAN_POWER, TEN_MINUTES, 90))
 

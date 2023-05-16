@@ -11,6 +11,7 @@ class EventClient:
         self.log_dir = log_dir if log_dir != '' else './events'
         self.fan_event_sync_hash = ''
         self.valve_hashes = {}
+        self.window_hashes = {}
 
     def get_sync_hash(self):
         letters = string.ascii_lowercase
@@ -42,6 +43,25 @@ class EventClient:
             'time': round(time.time()),
             'event': 'turned_on' if is_on else 'turned_off',
             'sync_hash': self.fan_event_sync_hash
+        }
+
+        self.log_event_to_file(event)
+
+    def log_window_opened_event(self, window_id):
+        self.log_window_event(window_id, True)
+
+    def log_window_closed_event(self, window_id):
+        self.log_window_event(window_id, False)
+
+    def log_window_event(self, window_id, opened):
+        if opened:
+            self.window_hashes[window_id] = self.get_sync_hash()
+
+        event = {
+            'subject': 'window',
+            'time': round(time.time()),
+            'event': 'opened' if opened else 'closed',
+            'sync_hash': self.window_hashes[window_id]
         }
 
         self.log_event_to_file(event)
