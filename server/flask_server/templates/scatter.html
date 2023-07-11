@@ -106,6 +106,12 @@
 								ID: 2
 								<br />
 								Last Opened: {{ valve_history[2]['delta_closed'] }}
+								<br />
+								<form action="valves/2/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="2" />
+									<input type="submit" value="Water">
+			   					</form>
 							</td>
 						</tr>
 						<tr>
@@ -118,9 +124,7 @@
 				<td>
 					<table>
 						<tr>
-							<td>
 								Aisle
-							</td>
 						</tr>
 					</table>
 				</td>
@@ -133,7 +137,12 @@
 								ID: 6
 								<br />
 								Last Opened: {{ valve_history[6]['delta_closed'] }}
-
+								<br />
+								<form action="valves/6/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="6" />
+									<input type="submit" value="Water">
+			   					</form>		
 							</td>
 						</tr>
 					</table>
@@ -147,6 +156,12 @@
 								ID: 3
 								<br />
 								Last Opened: {{ valve_history[3]['delta_closed'] }}
+								<br />
+								<form action="valves/3/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="3" />
+									<input type="submit" value="Water">
+			   					</form>
 
 							</td>
 						</tr>
@@ -157,6 +172,13 @@
 								ID: 4
 								<br />
 								Last Opened: {{ valve_history[4]['delta_closed'] }}
+								<br />
+								<form action="valves/4/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="4" />
+									<input type="submit" value="Water">
+			   					</form>
+
 							</td>
 						</tr>
 
@@ -165,9 +187,7 @@
 				<td>
 					<table>
 						<tr>
-							<td>
 								Aisle
-							</td>
 						</tr>
 					</table>
 				</td>
@@ -180,6 +200,12 @@
 								ID: 8
 								<br />
 								Last Opened: {{ valve_history[8]['delta_closed'] }}
+								<br />
+								<form action="valves/8/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="8" />
+									<input type="submit" value="Water">
+			   					</form>
 
 							</td>
 						</tr>
@@ -190,6 +216,12 @@
 								ID: 5
 								<br />
 								Last Opened: {{ valve_history[5]['delta_closed'] }}
+								<br />
+								<form action="valves/5/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="5" />
+									<input type="submit" value="Water">
+			   					</form>
 
 							</td>
 						</tr>
@@ -200,38 +232,21 @@
 								ID: 7
 								<br />
 								Last Opened: {{ valve_history[7]['delta_closed'] }}
-
+								<br />
+								<form action="valves/7/water" method="post">
+									<input type="text" value="60" id="valves_open_duration" name="open_duration_seconds">
+	    								<input type="hidden" name="valve_id" value="7" />
+									<input type="submit" value="Water">
+			   					</form>
 							</td>
 						</tr>
-
 					</table>
 				</td>
-
 			</tr>
 		</table>
 	</div>
-
-	<div class="row">
-    		<table>
-		    {%for valve in valve_config_list%}
-		    	<tr>
-				<form action="valves/{{ valve['valve_id'] }}/water" method="post">
-					<td><label for="valves_water_{{ valve['valve_id'] }}">Water {{ valve['description'] }}:</label></td>
-					<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
-	    				<input type="hidden" name="valve_id" value="{{ valve['valve_id'] }}" />
-					<td><input type="submit" value="Set Queue"></td>
-			   	</form>
-			</tr>
-		    {%endfor%}
-	
-    		<!--	<tr>
-		    		<form action="valves/water_tomatoes" method="post">
-					<td><label for="valves_tomatoes">Water Tomatoes:</label></td>
-					<td><input type="text" value="60" id="valves_open_duration" name="open_duration_seconds"></td>
-					<td><input type="submit" value="Queue Tomatoes"></td>
-		    		</form>
-    			</tr>
-		-->
+	<div>
+		<table>
     			<tr>
 		    		<form action="valves/water" method="post">
 					<td><label for="valves_all">Water All:</label></td>

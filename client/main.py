@@ -36,6 +36,10 @@ PIN_VALVE_9_POWER = 1
 PIN_CIRC_FAN_POWER = 22
 PIN_WINDOW_SE_INPUT_A = 25
 PIN_WINDOW_SE_INPUT_B = 8
+PIN_WINDOW_N_INPUT_A = 5
+PIN_WINDOW_N_INPUT_B = 6
+PIN_WINDOW_SW_INPUT_A = 26
+PIN_WINDOW_SW_INPUT_B = 19
 
 PIN_GROW_LIGHT_POWER = -1
 
@@ -355,21 +359,21 @@ class AtticFanTask:
         logging.debug('(fan) Fan is: ' + ('on' if self.is_on else 'off'))
 
         # If windows are closed and the temperature has crept to 5 degrees before fan comes on, open the windows
-        if not self.windows.eligible_for_open() and temp_f_now > self.config.fan_temp - 5:
+        if self.windows.eligible_for_open() and temp_f_now > (self.config.fan_temp - 5) and current_hour() < 16:
             self.windows.open()
 
         if self.is_on and temp_f_now < self.config.fan_temp:
             self.turn_off()
 
             ## If it's likely the last fan of the day, close the windows to try to keep heat in.
-            if self.windows.eligible_for_close() and current_hour() > 16:
+            if self.windows.eligible_for_close() and current_hour() >= 16:
                 self.windows.close()
 
-        elif not self.is_on and temp_f_now > self.config.fan_temp:
+        elif not self.is_on and temp_f_now > self.config.fan_temp and current_hour() < 16:
             self.turn_on()            
 
         # ultimate fallback
-        if self.windows.eligible_for_close() and temp_f_now < self.config.fan_temp - 5:
+        if self.windows.eligible_for_close() and not self.is_on and (temp_f_now < (self.config.fan_temp - 5) or current_hour() >= 16):
             self.windows.close()
 
     def turn_on(self):       
@@ -699,7 +703,6 @@ class WaterPlantsTask:
             logging.debug('comparing %s and %s' % (json.dumps(comparison, indent=2), json.dumps(sc, indent=2)))
 
             if current_hour() == hour \
-              and hour != self.last_watered_hour \
               and current_day() >= (self.last_watered_day + water_every_days):
                   self.last_watered_day = current_day()
                   self.last_watered_hour = current_hour()
@@ -859,14 +862,16 @@ def operation_normal():
     watering_schedule = [
         {
             'hour': 7,
-            'water_every_days': 1
+            'water_every_days': 2
         }
     ]
     
     pump = Pump(PIN_PUMP_POWER)
 
-    window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]', 20)
-    windows_group = WindowsGroup([window_se])
+    window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]', 15) # should eventually be 10 post-reconfig
+    window_n = Window(PIN_WINDOW_N_INPUT_A, PIN_WINDOW_N_INPUT_B, 'Window[North]', 25)
+    window_sw = Window(PIN_WINDOW_SW_INPUT_A, PIN_WINDOW_SW_INPUT_B, 'Window[SouthWest]', 10)
+    windows_group = WindowsGroup([window_se, window_n, window_sw])
 
     task_coordinator.register_task(config_sync_task)
     task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client, 'inside'))
@@ -891,6 +896,13 @@ def operation_normal():
 def operation_seedlings():
     task_coordinator.register_task(GrowLightTask('05:00', '20:00', 26))
     task_coordinator.run()
+
+def operation_window_close():
+    window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]', 20)
+    window_n = Window(PIN_WINDOW_N_INPUT_A, PIN_WINDOW_N_INPUT_B, 'Window[North]', 20)
+    windows_group = WindowsGroup([window_se, window_n])
+
+    windows_group.close()
 
 def operation_valve_test():
     open_duration_seconds = 12
@@ -1019,6 +1031,7 @@ signal.signal(signal.SIGINT, signal_handler)
 GPIO.setmode(GPIO.BCM)
 
 operation_normal()
+#operation_window_close()
 #operation_seedings()
 #operation_valve_test()
 
