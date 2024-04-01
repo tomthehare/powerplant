@@ -361,7 +361,10 @@ def scatter():
         last_valve_event = db_client.get_last_valve_event(valve_id)
         print(last_valve_event)
         valve_history[valve_id] = last_valve_event
-        valve_history[valve_id]['delta_closed'] = format_delta(timestamp() - valve_history[valve_id]['closed'])
+        closed_ts = valve_history[valve_id]['closed']
+        if not closed_ts:
+            closed_ts = timestamp()
+        valve_history[valve_id]['delta_closed'] = format_delta(timestamp() - closed_ts)
 
     print(valve_history)
 

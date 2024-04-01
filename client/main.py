@@ -40,6 +40,8 @@ PIN_WINDOW_N_INPUT_A = 5
 PIN_WINDOW_N_INPUT_B = 6
 PIN_WINDOW_SW_INPUT_A = 26
 PIN_WINDOW_SW_INPUT_B = 19
+PIN_WINDOW_E_INPUT_A = 9
+PIN_WINDOW_E_INPUT_B = 10
 
 PIN_GROW_LIGHT_POWER = -1
 
@@ -862,16 +864,20 @@ def operation_normal():
     watering_schedule = [
         {
             'hour': 7,
-            'water_every_days': 2
-        }
+            'water_every_days': 1
+        },
     ]
     
     pump = Pump(PIN_PUMP_POWER)
 
     window_se = Window(PIN_WINDOW_SE_INPUT_A, PIN_WINDOW_SE_INPUT_B, 'Window[SouthEast]', 15) # should eventually be 10 post-reconfig
-    window_n = Window(PIN_WINDOW_N_INPUT_A, PIN_WINDOW_N_INPUT_B, 'Window[North]', 25)
+    window_n = Window(PIN_WINDOW_N_INPUT_A, PIN_WINDOW_N_INPUT_B, 'Window[North]', 31)
     window_sw = Window(PIN_WINDOW_SW_INPUT_A, PIN_WINDOW_SW_INPUT_B, 'Window[SouthWest]', 10)
-    windows_group = WindowsGroup([window_se, window_n, window_sw])
+    window_e = Window(PIN_WINDOW_E_INPUT_A, PIN_WINDOW_E_INPUT_B, 'Window[East]', 10)
+    windows_group = WindowsGroup([window_se, window_n, window_sw, window_e])
+
+    # Make sure the windows are closed before doing anything else on start up.
+    windows_group.close();
 
     task_coordinator.register_task(config_sync_task)
     task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, tempHumidInside, SERVER_URL + URL_TEMP_HUMID_INSIDE, web_client, 'inside'))
