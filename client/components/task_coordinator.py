@@ -4,7 +4,10 @@ import traceback
 import os
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
 
 class TaskCoordinator:
 
@@ -28,12 +31,11 @@ class TaskCoordinator:
                     print(exc_type, fname, exc_tb.tb_lineno)
                     traceback.print_exc()
 
-            time.sleep(0.5);
+            time.sleep(0.5)
 
     def shutdown(self):
         self.enabled = False
 
         for task in self.tasks:
-            if hasattr(task, 'shutdown') and callable(getattr(task, 'shutdown')):
+            if hasattr(task, "shutdown") and callable(getattr(task, "shutdown")):
                 task.shutdown()
-

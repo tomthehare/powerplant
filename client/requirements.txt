@@ -4,3 +4,4 @@ pyserial
 adafruit-circuitpython-dht
 Adafruit_DHT
 heat-index
+black
