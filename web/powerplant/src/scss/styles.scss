@@ -1,0 +1,12 @@
+// Import all of Bootstrap's CSS
+
+$body-bg: rgb(27, 27 , 27);
+$primary: green;
+$body-color: white;
+
+@import "bootstrap/scss/bootstrap";
+
+.graphDiv {
+    height: 300px;
+    width: 600px;
+}

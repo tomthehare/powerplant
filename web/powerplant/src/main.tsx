@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import NavBar from "./components/NavBar.tsx";
-import "./main.css";
 import PowerplantLineGraph from "./components/PowerplantLineGraph.tsx";
 import WaterPanel from "./components/WaterPanel.tsx";
 
@@ -83,14 +82,41 @@ const outsideData = [
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <NavBar title="powerPLANT" />
-    <div className="bodyContent">
-      <div className="rowBlock">
-        <PowerplantLineGraph data={insideData} title="Inside Conditions" />
-        <PowerplantLineGraph data={outsideData} title="Outside Conditions" />
+    <div className="container">
+      <div className="row">
+        <NavBar title="powerPLANT" />
       </div>
-      <div className="rowBlock">
-        <WaterPanel plantName="Limes" lastOpened="Yesterday" />
+    </div>
+
+    <div className="container">
+      <div className="row">
+        <div className="col">
+          <div className="container-md">
+            <PowerplantLineGraph data={insideData} title="Inside Conditions" />
+          </div>
+        </div>
+        <div className="col">
+          <div className="container-md">
+            <PowerplantLineGraph
+              data={outsideData}
+              title="Outside Conditions"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="container">
+      <div className="row m-5">
+        <div className="col m-3">
+          <WaterPanel plantName="Limes" lastOpened="Yesterday" />
+        </div>
+        <div className="col m-3">
+          <WaterPanel plantName="Peppers" lastOpened="Yesterday" />
+        </div>
+        <div className="col m-3">
+          <WaterPanel plantName="Tomatoes" lastOpened="Yesterday" />
+        </div>
       </div>
     </div>
   </React.StrictMode>

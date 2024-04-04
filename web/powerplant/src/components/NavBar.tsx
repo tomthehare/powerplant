@@ -5,9 +5,9 @@ interface NavBarProps {
 const NavBar = ({ title }: NavBarProps) => {
   return (
     <>
-      <div className="rowBlock navBar">
-        <h1>{title}</h1>
-      </div>
+      <nav className="navbar navbar-expand-md navbar-dark mt-2 mb-0">
+        <span className="navbar-brand fw-bold fs-2">{title}</span>
+      </nav>
     </>
   );
 };

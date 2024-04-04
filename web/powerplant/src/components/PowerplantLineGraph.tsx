@@ -16,8 +16,8 @@ interface PowerplantLineGraphProps {
 const PowerplantLineGraph = ({ data, title }: PowerplantLineGraphProps) => {
   return (
     <>
-      <div className="chartDiv">
-        <div className="chartTitle">{title}</div>
+      <div className="graphDiv text-center fs-5 mt-5">
+        <div className="fw-bold">{title}</div>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <XAxis dataKey="name" />
