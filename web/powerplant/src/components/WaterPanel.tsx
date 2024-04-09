@@ -6,7 +6,7 @@ interface WaterPanelProps {
 const WaterPanel = ({ plantName, lastOpened }: WaterPanelProps) => {
   return (
     <>
-      <div className="container m-2 border">
+      <div className="container m-2 border rounded">
         <div className="row fw-bold text-center">
           <div className="col">{plantName}</div>
         </div>
