@@ -191,6 +191,18 @@ class DatabaseClient:
             """
             connection.execute_sql(sql)
 
+        if "PowerPlantEvents" not in tables:
+            sql = """
+            CREATE TABLE PowerPlantEvents (
+                EventID TEXT PRIMARY KEY,
+                SubjectType TEXT NOT NULL,
+                SubjectID TEXT NOT NULL,
+                Verb TEXT NOT NULL,
+                Timestamp INTEGER NOT NULL
+            )
+            """
+            connection.execute_sql(sql)
+
         connection.wrap_it_up()
 
     def insert_log(
@@ -699,6 +711,51 @@ class DatabaseClient:
             connection.wrap_it_up()
 
         return results
+
+    def get_powerplant_events(self, ts_start: int, ts_end: int):
+        sql = """
+        SELECT
+            EventID,
+            SubjectType,
+            SubjectID,
+            Verb,
+            Timestamp 
+        FROM PowerPlantEvents
+        WHERE Timestamp >= {ts_start}
+          AND Timestamp <= {ts_end}
+        ORDER BY TimeStamp
+        """.format(ts_start=ts_start, ts_end=ts_end)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+            results = connection.get_results()
+        finally:
+            connection.wrap_it_up()
+
+        return [
+            {
+                "event_id": a[0],
+                "subject_type": a[1],
+                "subject_id": a[2],
+                "verb": a[3],
+                "timestamp": int(a[4])
+            }
+            for a in results
+        ]
+
+    def insert_powerplant_event(self, event_id: str, subject_type: str, subject_id: str, verb: str, timestamp: int):
+        sql = """
+        INSERT INTO PowerPlantEvents (EventID, SubjectType, SubjectID, Verb, Timestamp) VALUES ('{event_id}', '{subject_type}', '{subject_id}', '{verb}', {timestamp});
+        """.format(event_id=event_id, subject_id=subject_id, subject_type=subject_type, verb=verb, timestamp=timestamp)
+
+        connection = ConnectionWrapper(self.database_name)
+
+        try:
+            connection.execute_sql(sql)
+        finally:
+            connection.wrap_it_up()
 
 class ConnectionWrapper:
 

@@ -30,9 +30,9 @@ class NormalOperation:
         event_client = EventClient()
 
         temp_humid_inside = TempHumidSensor(
-            PinConfig.PIN_TEMP_HUMIDITY_INSIDE, self.logger
+            PinConfig.PIN_TEMP_HUMIDITY_INSIDE, self.logger, "inside"
         )
-        # temp_humid_outside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE)
+        # temp_humid_outside = TempHumidSensor(PIN_TEMP_HUMIDITY_OUTSIDE, self.logger, "outside")
         web_client = WebClient(self.server_url, self.logger)
 
         config = Config()

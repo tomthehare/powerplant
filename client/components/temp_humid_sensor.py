@@ -7,12 +7,13 @@ DHT_SENSOR = Adafruit_DHT.DHT22
 
 
 class TempHumidSensor:
-    def __init__(self, pin: int, logger: Logger, time_observer: TimeObserver = None):
+    def __init__(self, pin: int, logger: Logger, location: str, time_observer: TimeObserver = None):
         logger.info("Setting up temperature/humidity sensor on data pin %d", pin)
         self.data_pin = pin
         self.last_read_ts = 0
         self.last_reading = None
         self.logger = logger
+        self.location = location
         self.time_observer = time_observer or TimeObserver()
 
     def read(self):

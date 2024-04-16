@@ -16,7 +16,7 @@ interface PowerplantBarChartProps {
 const PowerplantBarChart = ({ data, title }: PowerplantBarChartProps) => {
   return (
     <>
-      <div className="graphDiv text-center fs-5 mt-5">
+      <div className="barChartDiv text-center fs-5 mt-5">
         <div className="fw-bold">{title}</div>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart

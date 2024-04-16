@@ -13,32 +13,18 @@ class WebClient:
         self.logger = logger
         self.time_observer = time_observer if time_observer else TimeObserver()
 
-    def format_temp_humidity_data_string(self, reading: TempHumidReading):
-        return "&th|{timestamp}|humidity:{h}|temp:{t}|heat-index:{hi}".format(
-            timestamp=self.time_observer.timestamp(),
-            h=reading.get_humidity(),
-            t=reading.get_temp(),
-            hi=reading.get_heat_index(),
-        )
+    def send_temp_humidity_reading(self, reading: TempHumidReading, url: str, location: str):
+        self.logger.debug("sent web request: %s -> %s", url, str(TempHumidReading))
+        payload = {
+            "timestamp": reading.read_at_ts,
+            "humidity": reading.humid,
+            "temperature": reading.get_temp(),
+            "location": location
+        }
+        r = requests.post(url, data=payload)
 
-    def send_temp_humidity_reading(self, reading: TempHumidReading, url: str):
-        data = self.format_temp_humidity_data_string(reading)
-        self.logger.debug("sent web request: %s -> %s", url, data)
-        r = requests.post(url, data={"data": data})
-
-    def ask_if_plants_need_water(self, descriptor: str) -> bool:
-        url = self.server_url + "/plant-thirst/" + descriptor
-        response = requests.get(url)
-
-        if response.status_code != 200:
-            self.logger.error(
-                str(response.status_code) + " status code was received from " + url
-            )
-            return False
-
-        body = response.json()
-
-        return body["thirsty"]
+        if r.status_code != 200 and r.status_code != 201:
+            self.logger.error("Temp/humid recording failed: %s" % r.json())
 
     def read_valve_config(self):
         url = self.server_url + "/valve-config"

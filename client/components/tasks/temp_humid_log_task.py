@@ -42,7 +42,7 @@ class TempHumidLogTask:
         self.logger.info(
             "read temp/humid at %s: %s" % (self.location, reading.to_string())
         )
-        self.web_client.send_temp_humidity_reading(reading, self.url)
+        self.web_client.send_temp_humidity_reading(reading, self.url, self.location)
         self.last_run_ts = self.time_observer.timestamp()
 
         return True
