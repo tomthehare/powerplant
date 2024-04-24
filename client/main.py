@@ -2,16 +2,15 @@ import RPi.GPIO as GPIO
 import logging
 import signal
 import sys
-from client.components.task_coordinator import TaskCoordinator
-from client.operations.normal_operation import NormalOperation
+import coloredlogs
+from components.task_coordinator import TaskCoordinator
+from operations.normal_operation import NormalOperation
 
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+coloredlogs.install(level="DEBUG", fmt="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger()
 
 
-SERVER_URL = "http://192.168.86.172:5000"
+SERVER_URL = "http://192.168.86.47:8000"
 
 task_coordinator = TaskCoordinator()
 

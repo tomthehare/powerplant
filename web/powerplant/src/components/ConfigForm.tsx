@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import IConfig from "../models/IConfig";
+import IPlantGroup from "../models/IPlantGroup";
 
 type FormFields = {
   fanTemperature: number;
   wateringHours: string;
+  waterEveryDays: number;
+  plantGroups: IPlantGroup[];
 };
 
 const ConfigForm = () => {
+  /**
+   * Set up the necessary state and handlers for the form content
+   */
   const {
     register,
     handleSubmit,
@@ -17,6 +23,10 @@ const ConfigForm = () => {
 
   const [configStore, setConfigStore] = useState<IConfig | null>(null);
   const [isLoadingConfigStore, setIsLoadingConfigStore] = useState(true);
+
+  /**
+   * Load the initial state of the configuration
+   */
   useEffect(() => {
     const getConfigStore = async () => {
       try {
@@ -26,10 +36,10 @@ const ConfigForm = () => {
         var tempConfigStore: IConfig = {
           fanTemperature: configDict["fan_temperature"],
           waterConfig: {
-            waterEveryDays: 1,
-            hours: [7],
+            waterEveryDays: configDict["water_config"]["water_every_days"],
+            hours: configDict["water_config"]["hours"],
           },
-          plantGroups: [],
+          plantGroups: configDict["plant_groups"],
         };
 
         setConfigStore(tempConfigStore);
@@ -43,25 +53,38 @@ const ConfigForm = () => {
     getConfigStore();
   }, []);
 
+  /**
+   * Set up the submit handler.  Unfortunately the python api and the types in here aren't exactly equivalent, so there is
+   * some mapping work to be done.
+   *
+   * @param data Data coming from the form, as part of the registered hooks
+   */
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
       const submittable = {
         fan_temperature: data.fanTemperature,
         water_config: {
           hours: data.wateringHours.split(","),
-          water_every_days: 0,
+          water_every_days: data.waterEveryDays,
         },
         plant_groups: [],
       };
 
-      const updateResults = await fetch("http://localhost:8000/config", {
+      await fetch("http://localhost:8000/config", {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submittable),
       });
     } catch (error) {
-      setError("root", { message: "something bad happened" });
+      setError("root", { message: "something bad happened: " + error });
     }
   };
 
+  /**
+   * Start the render part of the component
+   */
   return isLoadingConfigStore ? (
     <h2>LOADING</h2>
   ) : (
@@ -90,11 +113,22 @@ const ConfigForm = () => {
                 </div>
               )}
               <br />
-              <span>Watering Hours: </span>
+              <span>Watering Hours (comma-separated): </span>
               <input
                 {...register("wateringHours")}
                 type="text"
                 defaultValue={configStore?.waterConfig.hours.join(",")}
+              />
+              <br />
+              <span>Water every days: </span>
+              <input
+                {...register("waterEveryDays")}
+                type="number"
+                defaultValue={
+                  configStore != null
+                    ? String(configStore?.waterConfig.waterEveryDays)
+                    : "1"
+                }
               />
             </div>
           </div>

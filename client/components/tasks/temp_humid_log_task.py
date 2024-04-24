@@ -1,8 +1,8 @@
 from logging import Logger
 
-from client.components.temp_humid_sensor import TempHumidSensor
-from client.components.time_observer import TimeObserver
-from client.components.web_client import WebClient
+from components.temp_humid_sensor import TempHumidSensor
+from components.time_observer import TimeObserver
+from components.web_client import WebClient
 
 
 class TempHumidLogTask:

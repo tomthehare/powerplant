@@ -1,24 +1,25 @@
 from logging import Logger
 
-from client.components.config import Config
-from client.components.event_client import EventClient
-from client.components.pump import Pump
-from client.components.task_coordinator import TaskCoordinator
-from client.components.tasks.attic_fan_task import AtticFanTask
-from client.components.tasks.config_sync_task import ConfigSyncTask
-from client.components.tasks.event_sending_task import EventSendingTask
-from client.components.tasks.temp_humid_log_task import TempHumidLogTask
-from client.components.tasks.valve_close_task import ValveCloseTask
-from client.components.tasks.water_plants_task import WaterPlantsTask
-from client.components.tasks.water_queue_task import WaterQueueTask
-from client.components.temp_humid_sensor import TempHumidSensor
-from client.components.time_observer import TimeObserver
-from client.components.valve import Valve
-from client.components.valve_lock import ValveLock
-from client.components.web_client import WebClient
-from client.components.window import Window
-from client.components.windows_group import WindowsGroup
-from client.pin_config import PinConfig
+from components.config import Config
+from components.event_client import EventClient
+from components.pump import Pump
+from components.task_coordinator import TaskCoordinator
+from components.tasks.attic_fan_task import AtticFanTask
+from components.tasks.config_sync_task import ConfigSyncTask
+from components.tasks.event_sending_task import EventSendingTask
+from components.tasks.temp_humid_log_task import TempHumidLogTask
+from components.tasks.valve_close_task import ValveCloseTask
+from components.tasks.water_plants_task import WaterPlantsTask
+from components.tasks.water_queue_task import WaterQueueTask
+from components.temp_humid_sensor import TempHumidSensor
+from components.time_observer import TimeObserver
+from components.time_observer_test import TimeObserverTest
+from components.valve import Valve
+from components.valve_lock import ValveLock
+from components.web_client import WebClient
+from components.window import Window
+from components.windows_group import WindowsGroup
+from pin_config import PinConfig
 
 
 class NormalOperation:
@@ -28,6 +29,9 @@ class NormalOperation:
 
     def run_operation(self, task_coordinator: TaskCoordinator):
         event_client = EventClient()
+
+        # time_observer = TimeObserver()
+        time_observer = TimeObserverTest(self.logger)
 
         temp_humid_inside = TempHumidSensor(
             PinConfig.PIN_TEMP_HUMIDITY_INSIDE, self.logger, "inside"
@@ -125,6 +129,7 @@ class NormalOperation:
             "Window[SouthEast]",
             15,
             self.logger,
+            time_observer=time_observer,
         )
 
         window_n = Window(
@@ -133,6 +138,7 @@ class NormalOperation:
             "Window[North]",
             31,
             self.logger,
+            time_observer=time_observer,
         )
         window_sw = Window(
             PinConfig.PIN_WINDOW_SW_INPUT_A,
@@ -140,6 +146,7 @@ class NormalOperation:
             "Window[SouthWest]",
             10,
             self.logger,
+            time_observer=time_observer,
         )
         window_e = Window(
             PinConfig.PIN_WINDOW_E_INPUT_A,
@@ -147,6 +154,7 @@ class NormalOperation:
             "Window[East]",
             10,
             self.logger,
+            time_observer=time_observer,
         )
         windows_group = WindowsGroup(
             [window_se, window_n, window_sw, window_e], self.logger
@@ -160,7 +168,7 @@ class NormalOperation:
             TempHumidLogTask(
                 TimeObserver.FIVE_MINUTES,
                 temp_humid_inside,
-                self.server_url + "/temp-humid-inside",
+                self.server_url + "/weather-samples",
                 web_client,
                 "inside",
                 self.logger,
@@ -177,7 +185,7 @@ class NormalOperation:
                 event_client,
             )
         )
-        # task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, temp_humid_outside, self.server_url + '/temp-humid-inside', web_client, 'outside'))
+        # task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, temp_humid_outside, self.server_url + '/weather-samples', web_client, 'outside', self.logger))
         task_coordinator.register_task(
             WaterPlantsTask(
                 TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
@@ -211,7 +219,9 @@ class NormalOperation:
             ValveCloseTask(valve_8, valve_lock, config, pump, self.logger)
         )
         task_coordinator.register_task(
-            EventSendingTask(60, web_client, event_client, self.logger)
+            EventSendingTask(
+                5, web_client, event_client, self.logger, 5, time_observer=time_observer
+            )
         )
 
         ## Check every 30 seconds to run the circ fans  for 90 seconds every 10 minutes:

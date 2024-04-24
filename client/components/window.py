@@ -2,6 +2,8 @@ from logging import Logger
 
 import RPi.GPIO as GPIO
 
+from components.time_observer import TimeObserver
+
 
 class Window:
     def __init__(
@@ -11,12 +13,14 @@ class Window:
         descriptor: str,
         movement_seconds: int,
         logger: Logger,
+        time_observer: TimeObserver = None,
     ):
         self.input_a = input_a
         self.input_b = input_b
         self.descriptor = descriptor
         self.movement_seconds = movement_seconds
         self.logger = logger
+        self.time_observer = time_observer or TimeObserver()
 
         self.is_open = None
 
@@ -45,7 +49,7 @@ class Window:
         self.logger.info("Opening window %s" % self.descriptor)
         GPIO.output(self.input_a, GPIO.HIGH)
         GPIO.output(self.input_b, GPIO.LOW)
-        time.sleep(self.movement_seconds)
+        self.time_observer.sleep(self.movement_seconds)
         GPIO.output(self.input_a, GPIO.LOW)
         self.is_open = True
 
@@ -57,6 +61,6 @@ class Window:
         self.logger.info("Closing window %s" % self.descriptor)
         GPIO.output(self.input_a, GPIO.LOW)
         GPIO.output(self.input_b, GPIO.HIGH)
-        time.sleep(self.movement_seconds)
+        self.time_observer.sleep(self.movement_seconds)
         GPIO.output(self.input_b, GPIO.LOW)
         self.is_open = False

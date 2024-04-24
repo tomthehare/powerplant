@@ -1,5 +1,5 @@
 from logging import Logger
-from client.components.time_observer import TimeObserver
+from components.time_observer import TimeObserver
 import RPi.GPIO as GPIO
 
 

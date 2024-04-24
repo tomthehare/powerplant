@@ -1,12 +1,12 @@
 from logging import Logger
 
-from client.components.config import Config
-from client.components.event_client import EventClient
-from client.components.temp_humid_sensor import TempHumidSensor
+from components.config import Config
+from components.event_client import EventClient
+from components.temp_humid_sensor import TempHumidSensor
 import RPi.GPIO as GPIO
 
-from client.components.time_observer import TimeObserver
-from client.components.windows_group import WindowsGroup
+from components.time_observer import TimeObserver
+from components.windows_group import WindowsGroup
 
 
 class AtticFanTask:

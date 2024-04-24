@@ -1,13 +1,19 @@
 from logging import Logger
 import Adafruit_DHT
-from client.components.time_observer import TimeObserver
-from client.dtos.temp_humid_reading import TempHumidReading
+from components.time_observer import TimeObserver
+from dtos.temp_humid_reading import TempHumidReading
 
 DHT_SENSOR = Adafruit_DHT.DHT22
 
 
 class TempHumidSensor:
-    def __init__(self, pin: int, logger: Logger, location: str, time_observer: TimeObserver = None):
+    def __init__(
+        self,
+        pin: int,
+        logger: Logger,
+        location: str,
+        time_observer: TimeObserver = None,
+    ):
         logger.info("Setting up temperature/humidity sensor on data pin %d", pin)
         self.data_pin = pin
         self.last_read_ts = 0

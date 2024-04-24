@@ -11,7 +11,7 @@ class TimeHelper:
     @staticmethod
     def format_timestamp_as_local(timestamp):
         if not timestamp:
-            return 'Not a Timestamp: %s' % str(timestamp)
+            return "Not a Timestamp: %s" % str(timestamp)
 
         dt_local = datetime.fromtimestamp(timestamp, tz.tzlocal())
         return dt_local.strftime("%Y/%m/%d %H:%M:%S")
@@ -23,9 +23,9 @@ class TimeHelper:
 
     @staticmethod
     def timestamp():
-        # return round(time.time())
+        return round(time.time())
         # just for testing:
-        return 1649324885
+        # return 1649324885
 
     @staticmethod
     def format_delta(seconds):
@@ -44,7 +44,7 @@ class TimeHelper:
         delta_pieces = []
 
         if days > 0:
-            delta_pieces.append('%d days' % days)
+            delta_pieces.append("%d days" % days)
 
         if hours > 0:
             delta_pieces.append("%d hours" % hours)
@@ -55,4 +55,4 @@ class TimeHelper:
         if seconds > 0:
             delta_pieces.append("%d seconds" % seconds)
 
-        return ' '.join(delta_pieces)
+        return " ".join(delta_pieces)

@@ -2,7 +2,7 @@ from logging import Logger
 
 import RPi.GPIO as GPIO
 
-from client.components.time_observer import TimeObserver
+from components.time_observer import TimeObserver
 
 
 class CirculatorFansTask:

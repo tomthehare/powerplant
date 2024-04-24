@@ -1,9 +1,9 @@
 from logging import Logger
 
-from client.components.pump import Pump
-from client.components.time_observer import TimeObserver
-from client.components.valve import Valve
-from client.components.valve_lock import ValveLock
+from components.pump import Pump
+from components.time_observer import TimeObserver
+from components.valve import Valve
+from components.valve_lock import ValveLock
 
 
 class ValveCloseTask:

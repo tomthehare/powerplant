@@ -2,26 +2,9 @@
   "fan_temperature": 86,
   "water_config": {
     "hours": [
-      7,
-      14
+      23
     ],
     "water_every_days": 1
   },
-  "plant_groups": [
-    {
-      "valve_id": 1,
-      "description": "Lime Tree",
-      "open_duration_seconds": 45
-    },
-    {
-      "valve_id": 2,
-      "description": "Tomatoes",
-      "open_duration_seconds": 60
-    },
-    {
-      "valve_id": 3,
-      "description": "Peppers",
-      "open_duration_seconds": 45
-    }
-  ]
+  "plant_groups": []
 }
