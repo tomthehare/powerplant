@@ -1,9 +1,9 @@
 from logging import Logger
 
-from client.components.task_coordinator import TaskCoordinator
-from client.components.window import Window
-from client.components.windows_group import WindowsGroup
-from client.pin_config import PinConfig
+from components.task_coordinator import TaskCoordinator
+from components.window import Window
+from components.windows_group import WindowsGroup
+from pin_config import PinConfig
 
 
 class CloseWindowOperation:

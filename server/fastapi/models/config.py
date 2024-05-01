@@ -9,4 +9,4 @@ from models.water_schedule import WaterSchedule
 class Config(BaseModel):
     fan_temperature: int
     water_config: Optional[WaterSchedule]
-    plant_groups: Optional[list[PlantGroup]]
+    plant_groups: Optional[list]

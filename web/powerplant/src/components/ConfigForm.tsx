@@ -30,7 +30,7 @@ const ConfigForm = () => {
   useEffect(() => {
     const getConfigStore = async () => {
       try {
-        const config = await fetch("http://localhost:8000/config");
+        const config = await fetch("http://192.168.86.172:8000/config");
         const configDict = await config.json();
 
         var tempConfigStore: IConfig = {
@@ -70,7 +70,7 @@ const ConfigForm = () => {
         plant_groups: [],
       };
 
-      await fetch("http://localhost:8000/config", {
+      await fetch("http://192.168.86.172:8000/config", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

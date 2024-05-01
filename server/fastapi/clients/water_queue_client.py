@@ -5,15 +5,16 @@ from models.water_queue_entry import WaterQueueEntry
 
 FILE_LOCATION_DEFAULT = "watering-queue.json"
 
+
 class WaterQueueClient:
 
     def get_water_queue_file_location(self) -> str:
         return FILE_LOCATION_DEFAULT
 
-    def get_queue(self) -> list[WaterQueueEntry]:
+    def get_queue(self) -> list:
         return_list = []
 
-        with open(self.get_water_queue_file_location(), 'r') as f:
+        with open(self.get_water_queue_file_location(), "r") as f:
             queue = json.load(f)
 
         for q in queue:
@@ -21,8 +22,8 @@ class WaterQueueClient:
 
         return return_list
 
-    def _save_queue(self, queue: list[WaterQueueEntry]):
-        with open(self.get_water_queue_file_location(), 'w') as f:
+    def _save_queue(self, queue: list):
+        with open(self.get_water_queue_file_location(), "w") as f:
             f.write(json.dumps([a.dict() for a in queue], indent=2))
 
     def enqueue_entry(self, entry: WaterQueueEntry):
@@ -40,5 +41,5 @@ class WaterQueueClient:
 
     def ensure_water_queue_exists(self):
         if not os.path.exists(self.get_water_queue_file_location()):
-            with open(self.get_water_queue_file_location(), 'w') as f:
+            with open(self.get_water_queue_file_location(), "w") as f:
                 f.write("[]")

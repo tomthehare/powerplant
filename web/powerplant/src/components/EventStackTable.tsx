@@ -8,7 +8,7 @@ const EventStackTable = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const results = await fetch("http://localhost:8000/events");
+        const results = await fetch("http://192.168.86.172:8000/events");
         const data = await results.json();
 
         const humanData = [];

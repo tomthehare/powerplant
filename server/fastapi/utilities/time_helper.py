@@ -24,8 +24,6 @@ class TimeHelper:
     @staticmethod
     def timestamp():
         return round(time.time())
-        # just for testing:
-        # return 1649324885
 
     @staticmethod
     def format_delta(seconds):

@@ -76,3 +76,13 @@ class WebClient:
             return False
 
         return True
+
+    def ping_server(self) -> bool:
+        url = self.server_url
+
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            return False
+
+        return "power" in response.json()

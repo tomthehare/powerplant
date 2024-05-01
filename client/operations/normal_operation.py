@@ -20,10 +20,20 @@ from components.web_client import WebClient
 from components.window import Window
 from components.windows_group import WindowsGroup
 from pin_config import PinConfig
+from window_config import (
+    WINDOW_EAST,
+    WINDOW_NORTH,
+    WINDOW_SOUTH_EAST,
+    WINDOW_SOUTH_WEST,
+    get_window_config,
+)
 
 
 class NormalOperation:
     def __init__(self, server_url: str, logger: Logger):
+        if not server_url:
+            raise Exception("Empty server url given.")
+
         self.server_url = server_url
         self.logger = logger
 
@@ -124,37 +134,21 @@ class NormalOperation:
         pump = Pump(PinConfig.PIN_PUMP_POWER, self.logger)
 
         window_se = Window(
-            PinConfig.PIN_WINDOW_SE_INPUT_A,
-            PinConfig.PIN_WINDOW_SE_INPUT_B,
-            "Window[SouthEast]",
-            15,
+            get_window_config(WINDOW_SOUTH_EAST),
             self.logger,
-            time_observer=time_observer,
         )
 
         window_n = Window(
-            PinConfig.PIN_WINDOW_N_INPUT_A,
-            PinConfig.PIN_WINDOW_N_INPUT_B,
-            "Window[North]",
-            31,
+            get_window_config(WINDOW_NORTH),
             self.logger,
-            time_observer=time_observer,
         )
         window_sw = Window(
-            PinConfig.PIN_WINDOW_SW_INPUT_A,
-            PinConfig.PIN_WINDOW_SW_INPUT_B,
-            "Window[SouthWest]",
-            10,
+            get_window_config(WINDOW_SOUTH_WEST),
             self.logger,
-            time_observer=time_observer,
         )
         window_e = Window(
-            PinConfig.PIN_WINDOW_E_INPUT_A,
-            PinConfig.PIN_WINDOW_E_INPUT_B,
-            "Window[East]",
-            10,
+            get_window_config(WINDOW_EAST),
             self.logger,
-            time_observer=time_observer,
         )
         windows_group = WindowsGroup(
             [window_se, window_n, window_sw, window_e], self.logger
@@ -186,14 +180,14 @@ class NormalOperation:
             )
         )
         # task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, temp_humid_outside, self.server_url + '/weather-samples', web_client, 'outside', self.logger))
-        task_coordinator.register_task(
-            WaterPlantsTask(
-                TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
-            )
-        )
-        task_coordinator.register_task(
-            WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump)
-        )
+        # task_coordinator.register_task(
+        #     WaterPlantsTask(
+        #         TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
+        #     )
+        # )
+        # task_coordinator.register_task(
+        #     WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump)
+        # )
         task_coordinator.register_task(
             ValveCloseTask(valve_1, valve_lock, config, pump, self.logger)
         )

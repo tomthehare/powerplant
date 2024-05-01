@@ -21,8 +21,7 @@ class Bootstrap:
         self.app = FastAPI()
         self.define_cross_origin_resource_sharing_policy()
 
-
-        db_client = DatabaseClient('powerplant.db')
+        db_client = DatabaseClient("powerplant.db")
         db_client.create_tables_if_not_exist()
         self.db_client = db_client
 
@@ -35,9 +34,7 @@ class Bootstrap:
         WaterQueueClient().ensure_water_queue_exists()
 
     def define_cross_origin_resource_sharing_policy(self):
-        allowed_origins = [
-            'http://localhost:5173'
-        ]
+        allowed_origins = ["http://localhost:5173", "http://192.168.86.172:5173"]
 
         self.app.add_middleware(
             CORSMiddleware,
@@ -45,4 +42,3 @@ class Bootstrap:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-

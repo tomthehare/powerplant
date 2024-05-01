@@ -26,7 +26,9 @@ const LivePage = () => {
           <div className="col">
             <div className="container">
               <PowerplantLineGraph
-                url={"http://localhost:8000/weather-samples?location=inside"}
+                url={
+                  "http://192.168.86.172:8000/weather-samples?location=inside"
+                }
                 title="Inside Conditions"
               />
             </div>
@@ -36,7 +38,9 @@ const LivePage = () => {
           <div className="col">
             <div className="container pb-4">
               <PowerplantLineGraph
-                url={"http://localhost:8000/weather-samples?location=outside"}
+                url={
+                  "http://192.168.86.172:8000/weather-samples?location=outside"
+                }
                 title="Outside Conditions"
               />
             </div>

@@ -1,7 +1,5 @@
 from logging import Logger
 
-from components.window import Window
-
 
 class WindowsGroup:
     def __init__(self, windows_list: list, logger: Logger):

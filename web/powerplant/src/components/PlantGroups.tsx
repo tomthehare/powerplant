@@ -8,7 +8,7 @@ const PlantGroups = () => {
   useEffect(() => {
     const fetchPlantGroups = async () => {
       try {
-        const results = await fetch("http://localhost:8000/plant-groups");
+        const results = await fetch("http://192.168.86.172:8000/plant-groups");
         const data = await results.json();
 
         const renderData = [];

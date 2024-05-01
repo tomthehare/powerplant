@@ -3,22 +3,20 @@ from logging import Logger
 import RPi.GPIO as GPIO
 
 from components.time_observer import TimeObserver
+from window_config import WindowConfig
 
 
 class Window:
     def __init__(
         self,
-        input_a: int,
-        input_b: int,
-        descriptor: str,
-        movement_seconds: int,
+        window_config: WindowConfig,
         logger: Logger,
         time_observer: TimeObserver = None,
     ):
-        self.input_a = input_a
-        self.input_b = input_b
-        self.descriptor = descriptor
-        self.movement_seconds = movement_seconds
+        self.input_a = window_config.pin_1
+        self.input_b = window_config.pin_2
+        self.descriptor = window_config.window_name
+        self.movement_seconds = window_config.movement_seconds
         self.logger = logger
         self.time_observer = time_observer or TimeObserver()
 
