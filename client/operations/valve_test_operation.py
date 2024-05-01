@@ -1,15 +1,15 @@
 from logging import Logger
 
-from client.components.config import Config
-from client.components.event_client import EventClient
-from client.components.fake_web_client import FakeWebClient
-from client.components.pump import Pump
-from client.components.task_coordinator import TaskCoordinator
-from client.components.tasks.valve_close_task import ValveCloseTask
-from client.components.tasks.water_queue_task import WaterQueueTask
-from client.components.valve import Valve
-from client.components.valve_lock import ValveLock
-from client.pin_config import PinConfig
+from components.config import Config
+from components.event_client import EventClient
+from components.fake_web_client import FakeWebClient
+from components.pump import Pump
+from components.task_coordinator import TaskCoordinator
+from components.tasks.valve_close_task import ValveCloseTask
+from components.tasks.water_queue_task import WaterQueueTask
+from components.valve import Valve
+from components.valve_lock import ValveLock
+from pin_config import PinConfig
 
 
 class ValveTestOperation:

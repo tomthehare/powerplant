@@ -1,9 +1,9 @@
 from logging import Logger
 import json
 
-from client.components.config import Config
-from client.components.time_observer import TimeObserver
-from client.components.web_client import WebClient
+from components.config import Config
+from components.time_observer import TimeObserver
+from components.web_client import WebClient
 
 
 class ConfigSyncTask:

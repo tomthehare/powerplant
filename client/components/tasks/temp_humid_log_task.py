@@ -1,8 +1,8 @@
 from logging import Logger
 
-from client.components.temp_humid_sensor import TempHumidSensor
-from client.components.time_observer import TimeObserver
-from client.components.web_client import WebClient
+from components.temp_humid_sensor import TempHumidSensor
+from components.time_observer import TimeObserver
+from components.web_client import WebClient
 
 
 class TempHumidLogTask:
@@ -42,7 +42,7 @@ class TempHumidLogTask:
         self.logger.info(
             "read temp/humid at %s: %s" % (self.location, reading.to_string())
         )
-        self.web_client.send_temp_humidity_reading(reading, self.url)
+        self.web_client.send_temp_humidity_reading(reading, self.url, self.location)
         self.last_run_ts = self.time_observer.timestamp()
 
         return True

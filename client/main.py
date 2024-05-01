@@ -2,16 +2,16 @@ import RPi.GPIO as GPIO
 import logging
 import signal
 import sys
-from client.components.task_coordinator import TaskCoordinator
-from client.operations.normal_operation import NormalOperation
+import coloredlogs
+from components.task_coordinator import TaskCoordinator
+from components.web_client import WebClient
+from operations.normal_operation import NormalOperation
+from operations.window_test_operation import WindowTestOperation
 
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+coloredlogs.install(level="DEBUG", fmt="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger()
 
-
-SERVER_URL = "http://192.168.86.172:5000"
+SERVER_URLS = ["http://127.0.0.1:8000", "http://192.168.86.47:8000"]
 
 task_coordinator = TaskCoordinator()
 
@@ -26,14 +26,27 @@ def signal_handler(sig, frame):
 ############################
 ### MAIN EXECUTION BELOW ###
 ############################
-logging.info("Starting up...")
+logger.info("Starting up...")
 signal.signal(signal.SIGINT, signal_handler)
 
 # use the numbers printed on the guides, not the ones on the board
 GPIO.setmode(GPIO.BCM)
 
-operation = NormalOperation(SERVER_URL, logger)
+logger.info("Finding server address...")
+active_server_url = ""
+for url in SERVER_URLS:
+    if WebClient(url, logger).ping_server():
+        logging.info("Found an active server at %s" % url)
+        active_server_url = url
+
+if not active_server_url:
+    raise Exception("No server url found!")
+
+operation = NormalOperation(active_server_url, logger)
 operation.run_operation(task_coordinator)
+
+# operation = WindowTestOperation(active_server_url, logger)
+# operation.run_operation()
 
 GPIO.cleanup()
 exit(0)

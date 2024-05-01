@@ -1,6 +1,6 @@
 from logging import Logger
-from client.components.time_observer import TimeObserver
-from client.dtos.temp_humid_reading import TempHumidReading
+from components.time_observer import TimeObserver
+from dtos.temp_humid_reading import TempHumidReading
 import requests
 
 
@@ -13,47 +13,37 @@ class WebClient:
         self.logger = logger
         self.time_observer = time_observer if time_observer else TimeObserver()
 
-    def format_temp_humidity_data_string(self, reading: TempHumidReading):
-        return "&th|{timestamp}|humidity:{h}|temp:{t}|heat-index:{hi}".format(
-            timestamp=self.time_observer.timestamp(),
-            h=reading.get_humidity(),
-            t=reading.get_temp(),
-            hi=reading.get_heat_index(),
-        )
+    def send_temp_humidity_reading(
+        self, reading: TempHumidReading, url: str, location: str
+    ):
+        self.logger.debug("sent web request: %s -> %s", url, str(reading))
+        payload = {
+            "timestamp": reading.read_at_ts,
+            "humidity": reading.humid,
+            "temperature": reading.get_temp(),
+            "location": location,
+        }
+        r = requests.post(url, json=payload)
 
-    def send_temp_humidity_reading(self, reading: TempHumidReading, url: str):
-        data = self.format_temp_humidity_data_string(reading)
-        self.logger.debug("sent web request: %s -> %s", url, data)
-        r = requests.post(url, data={"data": data})
-
-    def ask_if_plants_need_water(self, descriptor: str) -> bool:
-        url = self.server_url + "/plant-thirst/" + descriptor
-        response = requests.get(url)
-
-        if response.status_code != 200:
-            self.logger.error(
-                str(response.status_code) + " status code was received from " + url
-            )
-            return False
-
-        body = response.json()
-
-        return body["thirsty"]
+        if r.status_code != 200 and r.status_code != 201:
+            self.logger.error("Temp/humid recording failed: %s" % r.json())
 
     def read_valve_config(self):
-        url = self.server_url + "/valve-config"
+        url = self.server_url + "/config"
         r = requests.get(url)
 
-        return r.json()
+        decoded = r.json()
+
+        return decoded["plant_groups"] if "plant_groups" in decoded else []
 
     def read_fan_config(self):
-        url = self.server_url + "/fan-config"
+        url = self.server_url + "/config"
         response = requests.get(url)
 
         return response.json()
 
     def read_watering_queue(self):
-        url = self.server_url + "/valves/watering-queue"
+        url = self.server_url + "/watering-queue"
 
         response = requests.get(url)
         return response.json()
@@ -61,12 +51,13 @@ class WebClient:
     def post_event(self, payload):
         url = self.server_url + "/events"
 
-        response = requests.post(url, data=payload)
+        response = requests.post(url, json=payload)
 
-        if response.status_code != 200:
+        if response.status_code not in [200, 201]:
             self.logger.error("Error posting event: %s" % response.json())
+            return False
 
-        return response.status_code == 200
+        return True
 
     def water_all(self):
         url = self.server_url + "/valves/water"
@@ -75,8 +66,8 @@ class WebClient:
 
         return response.status_code == 200
 
-    def dequeue_valve(self, valve_id):
-        url = self.server_url + "/valves/watering-queue/%s" % valve_id
+    def dequeue_valve(self):
+        url = self.server_url + "/watering-queue"
         response = requests.delete(url)
 
         if response.status_code != 200:
@@ -85,3 +76,13 @@ class WebClient:
             return False
 
         return True
+
+    def ping_server(self) -> bool:
+        url = self.server_url
+
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            return False
+
+        return "power" in response.json()

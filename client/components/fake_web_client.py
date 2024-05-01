@@ -1,7 +1,7 @@
 from logging import Logger
-from client.components.time_observer import TimeObserver
-from client.components.web_client import WebClient
-from client.dtos.temp_humid_reading import TempHumidReading
+from components.time_observer import TimeObserver
+from components.web_client import WebClient
+from dtos.temp_humid_reading import TempHumidReading
 
 
 class FakeWebClient(WebClient):

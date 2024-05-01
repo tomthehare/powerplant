@@ -1,10 +1,8 @@
 from logging import Logger
 
-from client.components.window import Window
-
 
 class WindowsGroup:
-    def __init__(self, windows_list: list[Window], logger: Logger):
+    def __init__(self, windows_list: list, logger: Logger):
         self.windows = windows_list
         self.windows_are_open = None
 

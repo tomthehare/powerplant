@@ -5,3 +5,6 @@ adafruit-circuitpython-dht
 Adafruit_DHT
 heat-index
 black
+RPi.GPIO
+pdbpp
+coloredlogs

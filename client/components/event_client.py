@@ -9,10 +9,12 @@ import glob
 class EventClient:
 
     def __init__(self, log_dir=""):
-        self.log_dir = log_dir if log_dir != "" else "./events"
+        self.log_dir = log_dir if log_dir != "" else "/tmp/events"
         self.fan_event_sync_hash = ""
         self.valve_hashes = {}
         self.window_hashes = {}
+
+        self.create_event_folder()
 
     def get_sync_hash(self):
         letters = string.ascii_lowercase
@@ -25,10 +27,11 @@ class EventClient:
             self.valve_hashes[valve_id] = self.get_sync_hash()
 
         event = {
-            "subject": "valve_" + str(valve_id),
-            "time": round(time.time()),
-            "event": "opened" if is_open else "closed",
-            "sync_hash": self.valve_hashes[valve_id],
+            "event_id": self.get_sync_hash(),
+            "subject_type": "valve",
+            "subject_id": str(valve_id),
+            "timestamp": round(time.time()),
+            "verb": "opened" if is_open else "closed",
         }
 
         self.log_event_to_file(event)
@@ -40,10 +43,11 @@ class EventClient:
             self.fan_event_sync_hash = self.get_sync_hash()
 
         event = {
-            "subject": "fan",
-            "time": round(time.time()),
-            "event": "turned_on" if is_on else "turned_off",
-            "sync_hash": self.fan_event_sync_hash,
+            "event_id": self.get_sync_hash(),
+            "subject_type": "fan",
+            "subject_id": "main",
+            "timestamp": round(time.time()),
+            "verb": "on" if is_on else "of",
         }
 
         self.log_event_to_file(event)
@@ -59,19 +63,21 @@ class EventClient:
             self.window_hashes[window_id] = self.get_sync_hash()
 
         event = {
-            "subject": "window",
-            "time": round(time.time()),
-            "event": "opened" if opened else "closed",
-            "sync_hash": self.window_hashes[window_id],
+            "event_id": self.get_sync_hash(),
+            "subject_type": "window",
+            "subject_id": str(window_id),
+            "timestamp": round(time.time()),
+            "verb": "opened" if opened else "closed",
         }
 
         self.log_event_to_file(event)
 
-    def log_event_to_file(self, event_payload):
-        file_path = self.log_dir + "/" + str(time.time()) + ".json"
-
+    def create_event_folder(self):
         if not os.path.exists(self.log_dir):
             os.mkdir(self.log_dir)
+
+    def log_event_to_file(self, event_payload):
+        file_path = self.log_dir + "/" + str(time.time()) + ".json"
 
         with open(file_path, "w") as f:
             json.dump(event_payload, f)

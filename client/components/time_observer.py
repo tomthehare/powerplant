@@ -18,3 +18,6 @@ class TimeObserver:
 
     def current_minute(self):
         return datetime.datetime.now().minute
+
+    def sleep(self, seconds: int):
+        time.sleep(seconds)

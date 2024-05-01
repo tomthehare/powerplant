@@ -1,7 +1,7 @@
-from client.components.pump import Pump
-from client.components.time_observer import TimeObserver
-from client.components.valve_lock import ValveLock
-from client.components.web_client import WebClient
+from components.pump import Pump
+from components.time_observer import TimeObserver
+from components.valve_lock import ValveLock
+from components.web_client import WebClient
 
 
 class WaterQueueTask:
@@ -48,15 +48,8 @@ class WaterQueueTask:
         next_valve_id = watering_queue[0]["valve_id"]
         open_duration_seconds = watering_queue[0]["open_duration_seconds"]
         if self.valve_lock.acquire_lock(next_valve_id):
-            #            url = SERVER_URL + '/valves/watering-queue/%s' % next_valve_id
-            #            response = requests.delete(url)
-            #
-            #            if response.status_code != 200:
-            #                logging.error('Error received trying to dequeue valve')
-            #                logging.error(response.json())
-            #                return
 
-            if not self.web_client.dequeue_valve(next_valve_id):
+            if not self.web_client.dequeue_valve():
                 return
 
             self.valve_dict[str(next_valve_id)].open(open_duration_seconds)

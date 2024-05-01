@@ -2,8 +2,8 @@ import json
 from logging import Logger
 import os
 
-from client.components.time_observer import TimeObserver
-from client.components.web_client import WebClient
+from components.time_observer import TimeObserver
+from components.web_client import WebClient
 
 
 class WaterPlantsTask:

@@ -3,9 +3,9 @@ import time
 
 import RPi.GPIO as GPIO
 
-from client.components.event_client import EventClient
-from client.components.time_observer import TimeObserver
-from client.dtos.valve_config import ValveConfig
+from components.event_client import EventClient
+from components.time_observer import TimeObserver
+from dtos.valve_config import ValveConfig
 
 
 class Valve:

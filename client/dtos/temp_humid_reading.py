@@ -1,4 +1,4 @@
-from client.components.time_observer import TimeObserver
+from components.time_observer import TimeObserver
 from heat_index import calculate as heatindex
 import json
 
@@ -23,7 +23,7 @@ class TempHumidReading:
         return round(heatindex.from_fahrenheit(self.get_temp(), self.get_humidity()), 1)
 
     def __str__(self):
-        self.to_string()
+        return self.to_string()
 
     def to_string(self):
         return json.dumps(
