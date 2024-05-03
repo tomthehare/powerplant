@@ -24,22 +24,6 @@ class Config:
                 "open_duration_seconds"
             ]
 
-        """
-        example:
-
-        {
-            "valves":  [
-                {
-                    "id": 1,
-                    "description": "LIMES",
-                    "conductivity_threshold": 0.6,
-                    "watering_delay_seconds": 3600,
-                    "open_duration_seconds": 30
-                }
-            ]
-        }
-        """
-
     def get_valve_config(self, valve_id):
         if valve_id not in self.valves.keys():
             return ValveConfig(valve_id)

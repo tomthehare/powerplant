@@ -5,6 +5,7 @@ from components.event_client import EventClient
 from components.fake_web_client import FakeWebClient
 from components.pump import Pump
 from components.task_coordinator import TaskCoordinator
+from components.tasks.config_sync_task import ConfigSyncTask
 from components.tasks.valve_close_task import ValveCloseTask
 from components.tasks.water_queue_task import WaterQueueTask
 from components.valve import Valve
@@ -20,7 +21,7 @@ class ValveTestOperation:
 
     def run_operation(self, task_coordinator: TaskCoordinator):
         event_client = EventClient()
-        open_duration_seconds = 12
+        open_duration_seconds = 20
 
         configuration = [
             {
@@ -154,29 +155,21 @@ class ValveTestOperation:
         }
 
         valve_queue = [
-            {"valve_id": 1, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 2, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 3, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 4, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 5, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 1, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 2, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 3, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 4, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 5, "open_duration_seconds": open_duration_seconds},
             {"valve_id": 6, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 7, "open_duration_seconds": open_duration_seconds},
-            {"valve_id": 8, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 7, "open_duration_seconds": open_duration_seconds},
+            # {"valve_id": 8, "open_duration_seconds": open_duration_seconds},
         ]
-
-        # For testing individual:
-        # valve_queue = [
-        #   {
-        #       'valve_id': 8,
-        #       'open_duration_seconds': open_duration_seconds
-        #   }
-        # ]
 
         pump = Pump(PinConfig.PIN_PUMP_POWER, self.logger)
 
         water_queue = WaterQueueTask(
             FakeWebClient(self.server_url, self.logger, valve_queue),
-            30,
+            15,
             valve_lock,
             valve_dict,
             pump,

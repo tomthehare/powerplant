@@ -2,6 +2,7 @@ import EventStackTable from "../components/EventStackTable";
 import PowerplantBarChart from "../components/PowerplantBarChart";
 import PowerplantLineGraph from "../components/PowerplantLineGraph";
 import PlantGroups from "../components/PlantGroups";
+import CurrentConditions from "../components/CurrentConditions";
 
 const fanActivity = [
   {
@@ -21,6 +22,9 @@ const fanActivity = [
 const LivePage = () => {
   return (
     <>
+      <div className="container">
+        <CurrentConditions />
+      </div>
       <div className="container">
         <div className="row">
           <div className="col">

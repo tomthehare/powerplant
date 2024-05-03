@@ -25,8 +25,6 @@ const PowerplantLineGraph = ({ url, title }: PowerplantLineGraphProps) => {
         const results = await fetch(url);
         const data = await results.json();
 
-        console.log(data);
-
         var humanData = [];
         for (let index = 0; index < data.length; index++) {
           const element = data[index];

@@ -47,7 +47,7 @@ class EventClient:
             "subject_type": "fan",
             "subject_id": "main",
             "timestamp": round(time.time()),
-            "verb": "on" if is_on else "of",
+            "verb": "on" if is_on else "off",
         }
 
         self.log_event_to_file(event)

@@ -180,14 +180,14 @@ class NormalOperation:
             )
         )
         # task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, temp_humid_outside, self.server_url + '/weather-samples', web_client, 'outside', self.logger))
-        # task_coordinator.register_task(
-        #     WaterPlantsTask(
-        #         TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
-        #     )
-        # )
-        # task_coordinator.register_task(
-        #     WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump)
-        # )
+        task_coordinator.register_task(
+            WaterPlantsTask(
+                TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
+            )
+        )
+        task_coordinator.register_task(
+            WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump)
+        )
         task_coordinator.register_task(
             ValveCloseTask(valve_1, valve_lock, config, pump, self.logger)
         )

@@ -37,5 +37,5 @@ class FakeWebClient(WebClient):
     def water_all(self):
         return True
 
-    def dequeue_valve(self, valve_id):
+    def dequeue_valve(self):
         return True

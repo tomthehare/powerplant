@@ -67,7 +67,7 @@ const ConfigForm = () => {
           hours: data.wateringHours.split(","),
           water_every_days: data.waterEveryDays,
         },
-        plant_groups: [],
+        plant_groups: configStore?.plantGroups,
       };
 
       await fetch("http://192.168.86.172:8000/config", {

@@ -164,8 +164,8 @@ def get_plant_groups():
 
     return_data = []
     for plant_group in config.plant_groups or []:
-        valve_id = int(plant_group.valve_id)
-        description = plant_group.description
+        valve_id = int(plant_group["valve_id"])
+        description = plant_group["description"]
         last_watered = None
 
         for valve_event in valve_events:

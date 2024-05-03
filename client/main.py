@@ -5,7 +5,9 @@ import sys
 import coloredlogs
 from components.task_coordinator import TaskCoordinator
 from components.web_client import WebClient
+from operations.attic_fan_test_operation import AtticFanTestOperation
 from operations.normal_operation import NormalOperation
+from operations.valve_test_operation import ValveTestOperation
 from operations.window_test_operation import WindowTestOperation
 
 coloredlogs.install(level="DEBUG", fmt="%(asctime)s [%(levelname)s] %(message)s")
@@ -45,7 +47,7 @@ if not active_server_url:
 operation = NormalOperation(active_server_url, logger)
 operation.run_operation(task_coordinator)
 
-# operation = WindowTestOperation(active_server_url, logger)
+# operation = AtticFanTestOperation(active_server_url, logger)
 # operation.run_operation()
 
 GPIO.cleanup()

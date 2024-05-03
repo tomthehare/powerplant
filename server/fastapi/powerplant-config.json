@@ -1,10 +1,51 @@
 {
-  "fan_temperature": 86,
+  "fan_temperature": 85,
   "water_config": {
     "hours": [
-      23
+      8
     ],
     "water_every_days": 1
   },
-  "plant_groups": []
+  "plant_groups": [
+    {
+      "valve_id": 1,
+      "description": "Tomatoes[SouthEast]",
+      "open_duration_seconds": 20
+    },
+    {
+      "valve_id": 2,
+      "description": "FarWall[Previously Basil]",
+      "open_duration_seconds": 20
+    },
+    {
+      "valve_id": 3,
+      "description": "Raised Bed",
+      "open_duration_seconds": 20  
+    },
+    {
+      "valve_id": 4,
+      "description": "Tomatoes[West]",
+      "open_duration_seconds": 20  
+    },
+    {
+      "valve_id": 5,
+      "description": "East Wall Middle [Previously Strawberries]",
+      "open_duration_seconds": 20  
+    },
+    {
+      "valve_id": 6,
+      "description": "Jalepeno Limes",
+      "open_duration_seconds": 20  
+    },
+    {
+      "valve_id": 7,
+      "description": "North East Bubblers",
+      "open_duration_seconds": 20  
+    },
+    {
+      "valve_id": 8,
+      "description": "Tomatoes[NorthEast]",
+      "open_duration_seconds": 20
+    }
+  ]
 }
