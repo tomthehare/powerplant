@@ -11,6 +11,7 @@ from components.valve import Valve
 from components.valve_lock import ValveLock
 from components.window import Window
 from components.windows_group import WindowsGroup
+from gpio_controller import GPIOController
 from pin_config import PinConfig
 from window_config import (
     WINDOW_SOUTH_EAST,
@@ -28,6 +29,8 @@ class WindowTestOperation:
         self.logger = logger
 
     def run_operation(self):
+        GPIOController.set_test_mode(True, self.logger)
+
         window_se = Window(
             get_window_config(WINDOW_SOUTH_EAST),
             self.logger,

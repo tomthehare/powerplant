@@ -2,7 +2,9 @@ from logging import Logger
 
 import RPi.GPIO as GPIO
 
+from components.event_client import EventClient
 from components.time_observer import TimeObserver
+from gpio_controller import GPIOController
 from window_config import WindowConfig
 
 
@@ -11,6 +13,7 @@ class Window:
         self,
         window_config: WindowConfig,
         logger: Logger,
+        event_client: EventClient,
         time_observer: TimeObserver = None,
     ):
         self.input_a = window_config.pin_1
@@ -18,15 +21,16 @@ class Window:
         self.descriptor = window_config.window_name
         self.movement_seconds = window_config.movement_seconds
         self.logger = logger
+        self.event_client = event_client or EventClient()
         self.time_observer = time_observer or TimeObserver()
 
         self.is_open = None
 
-        GPIO.setup(self.input_a, GPIO.OUT)
-        GPIO.output(self.input_a, GPIO.LOW)
+        GPIOController.register_pin(self.input_a)
+        GPIOController.deactivate_pin(self.input_a)
 
-        GPIO.setup(self.input_b, GPIO.OUT)
-        GPIO.output(self.input_b, GPIO.LOW)
+        GPIOController.register_pin(self.input_b)
+        GPIOController.deactivate_pin(self.input_b)
 
         self.logger.info(
             "Setting up %s on pins %d and %d"
@@ -45,11 +49,14 @@ class Window:
             return
 
         self.logger.info("Opening window %s" % self.descriptor)
-        GPIO.output(self.input_a, GPIO.HIGH)
-        GPIO.output(self.input_b, GPIO.LOW)
+        GPIOController.activate_pin(self.input_a)
+        GPIOController.deactivate_pin(self.input_b)
+
         self.time_observer.sleep(self.movement_seconds)
-        GPIO.output(self.input_a, GPIO.LOW)
+
+        GPIOController.deactivate_pin(self.input_a)
         self.is_open = True
+        self.event_client.log_window_opened_event(self.descriptor)
 
     def close(self):
         if not self.eligible_for_close():
@@ -57,8 +64,11 @@ class Window:
             return
 
         self.logger.info("Closing window %s" % self.descriptor)
-        GPIO.output(self.input_a, GPIO.LOW)
-        GPIO.output(self.input_b, GPIO.HIGH)
+        GPIOController.deactivate_pin(self.input_a)
+        GPIOController.activate_pin(self.input_b)
+
         self.time_observer.sleep(self.movement_seconds)
-        GPIO.output(self.input_b, GPIO.LOW)
+
+        GPIOController.deactivate_pin(self.input_b)
         self.is_open = False
+        self.event_client.log_window_closed_event(self.descriptor)

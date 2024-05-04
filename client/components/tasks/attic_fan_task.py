@@ -7,6 +7,7 @@ import RPi.GPIO as GPIO
 
 from components.time_observer import TimeObserver
 from components.windows_group import WindowsGroup
+from gpio_controller import GPIOController
 
 
 class AtticFanTask:
@@ -34,8 +35,8 @@ class AtticFanTask:
 
         self.logger.info("Setting up fan on pin %d", self.power_pin)
 
-        GPIO.setup(self.power_pin, GPIO.OUT)
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.register_pin(self.power_pin)
+        GPIOController.activate_pin(self.power_pin)
 
     def run(self):
         if self.time_observer.timestamp() < (
@@ -92,13 +93,13 @@ class AtticFanTask:
             self.windows.close()
 
     def turn_on(self):
-        GPIO.output(self.power_pin, GPIO.LOW)
+        GPIOController.deactivate_pin(self.power_pin)
         self.is_on = True
         self.event_client.log_fan_event(True)
         self.logger.info("Turned fan on")
 
     def turn_off(self):
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.activate_pin(self.power_pin)
         self.is_on = False
         self.event_client.log_fan_event(False)
         self.logger.info("Turned fan off")

@@ -3,6 +3,7 @@ from logging import Logger
 import RPi.GPIO as GPIO
 
 from components.time_observer import TimeObserver
+from gpio_controller import GPIOController
 
 
 class CirculatorFansTask:
@@ -25,8 +26,8 @@ class CirculatorFansTask:
         self.logger = logger
         self.time_observer = time_observer or TimeObserver()
 
-        GPIO.setup(self.power_pin, GPIO.OUT)
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.register_pin(self.power_pin)
+        GPIOController.activate_pin(self.power_pin)
 
     def run(self):
         if self.time_observer.timestamp() < (
@@ -47,12 +48,12 @@ class CirculatorFansTask:
             self.turn_off()
 
     def turn_on(self):
-        GPIO.output(self.power_pin, GPIO.LOW)
+        GPIOController.deactivate_pin(self.power_pin)
         self.is_on = True
         self.logger.info("Turned circulation fans on")
 
     def turn_off(self):
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.activate_pin(self.power_pin)
         self.is_on = False
         self.logger.info("Turned circulation fans off")
 

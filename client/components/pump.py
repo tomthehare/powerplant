@@ -2,6 +2,7 @@ from logging import Logger
 import RPi.GPIO as GPIO
 
 from components.time_observer import TimeObserver
+from gpio_controller import GPIOController
 
 
 class Pump:
@@ -18,21 +19,20 @@ class Pump:
         self.pump_on = False
         self.last_on_ts = -1
 
-        GPIO.setup(self.power_pin, GPIO.OUT)
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.register_pin(self.power_pin)
+        GPIOController.activate_pin(self.power_pin)
 
     def enable_test_mode(self):
         self.test_mode = True
 
     def turn_on(self):
         if not self.test_mode:
-            GPIO.output(self.power_pin, GPIO.LOW)
-
+            GPIOController.deactivate_pin(self.power_pin)
         self.pump_on = True
         self.last_on_ts = self.time_observer.timestamp()
         self.logger.info("Turned on pump")
 
     def turn_off(self):
-        GPIO.output(self.power_pin, GPIO.HIGH)
+        GPIOController.activate_pin(self.power_pin)
         self.pump_on = False
         self.logger.info("Turned off pump")

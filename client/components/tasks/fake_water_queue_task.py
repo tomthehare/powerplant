@@ -1,11 +1,12 @@
 from logging import Logger
 from components.pump import Pump
+from components.tasks.water_queue_task import WaterQueueTask
 from components.time_observer import TimeObserver
 from components.valve_lock import ValveLock
 from components.web_client import WebClient
 
 
-class WaterQueueTask:
+class FakeWaterQueueTask(WaterQueueTask):
     def __init__(
         self,
         logger: Logger,
@@ -16,14 +17,15 @@ class WaterQueueTask:
         pump: Pump,
         time_observer: TimeObserver = None,
     ):
-        self.logger = logger
-        self.web_client = web_client
-        self.run_every_seconds = int(run_every_seconds)
-        self.last_run_ts = 0
-        self.valve_lock = valve_lock
-        self.valve_dict = valve_dict
-        self.pump = pump
-        self.time_observer = time_observer or TimeObserver()
+        super().__init__(
+            logger,
+            web_client,
+            run_every_seconds,
+            valve_lock,
+            valve_dict,
+            pump,
+            time_observer=time_observer,
+        )
 
     def should_run(self):
         return self.time_observer.timestamp() > (
@@ -32,10 +34,6 @@ class WaterQueueTask:
 
     def run(self):
         if not self.should_run():
-            return
-
-        # If the valve is locked, just return without setting the time so it checks again soon
-        if self.valve_lock.is_locked():
             return
 
         watering_queue = self.web_client.read_watering_queue()
@@ -50,10 +48,12 @@ class WaterQueueTask:
 
         next_valve_id = watering_queue[0]["valve_id"]
         open_duration_seconds = watering_queue[0]["open_duration_seconds"]
-        if self.valve_lock.acquire_lock(next_valve_id):
 
-            if not self.web_client.dequeue_valve():
-                return
+        if not self.web_client.dequeue_valve():
+            return
 
-            self.valve_dict[str(next_valve_id)].open(open_duration_seconds)
-            self.pump.turn_on()
+        self.logger.info(
+            "[Fake] Opened valve %d for %d seconds"
+            % (next_valve_id, open_duration_seconds)
+        )
+        self.logger.info("[Fake] Closed valve %d" % next_valve_id)

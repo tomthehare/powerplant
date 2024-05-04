@@ -20,25 +20,25 @@ WINDOW_SOUTH_WEST = "window_southwest"
 WINDOWS_DICTIONARY = {
     WINDOW_NORTH: WindowConfig(
         31,
-        "Window[North]",
+        "North",
         PinConfig.PIN_WINDOW_N_INPUT_A,
         PinConfig.PIN_WINDOW_N_INPUT_B,
     ),
     WINDOW_EAST: WindowConfig(
         10,
-        "Window[North]",
+        "East",
         PinConfig.PIN_WINDOW_E_INPUT_A,
         PinConfig.PIN_WINDOW_E_INPUT_B,
     ),
     WINDOW_SOUTH_EAST: WindowConfig(
         12,
-        "Window[SouthEast]",
+        "SouthEast",
         PinConfig.PIN_WINDOW_SE_INPUT_A,
         PinConfig.PIN_WINDOW_SE_INPUT_B,
     ),
     WINDOW_SOUTH_WEST: WindowConfig(
         12,
-        "Window[SouthWest]",
+        "SouthWest",
         PinConfig.PIN_WINDOW_SW_INPUT_A,
         PinConfig.PIN_WINDOW_SW_INPUT_B,
     ),

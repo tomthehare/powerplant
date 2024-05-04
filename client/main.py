@@ -5,6 +5,7 @@ import sys
 import coloredlogs
 from components.task_coordinator import TaskCoordinator
 from components.web_client import WebClient
+from gpio_controller import GPIOController
 from operations.attic_fan_test_operation import AtticFanTestOperation
 from operations.normal_operation import NormalOperation
 from operations.valve_test_operation import ValveTestOperation
@@ -13,9 +14,11 @@ from operations.window_test_operation import WindowTestOperation
 coloredlogs.install(level="DEBUG", fmt="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger()
 
+GPIOController.set_test_mode(False, logger)
+
 SERVER_URLS = ["http://127.0.0.1:8000", "http://192.168.86.47:8000"]
 
-task_coordinator = TaskCoordinator()
+task_coordinator = TaskCoordinator(logger)
 
 
 def signal_handler(sig, frame):
@@ -47,7 +50,7 @@ if not active_server_url:
 operation = NormalOperation(active_server_url, logger)
 operation.run_operation(task_coordinator)
 
-# operation = AtticFanTestOperation(active_server_url, logger)
+# operation = WindowTestOperation(active_server_url, logger)
 # operation.run_operation()
 
 GPIO.cleanup()

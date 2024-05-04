@@ -1,9 +1,16 @@
 interface WaterPanelProps {
   plantName: string;
   lastOpened: string;
+  valveID: number;
+  onWaterClick: (valveID: number, openDurationSeconds: number) => void;
 }
 
-const WaterPanel = ({ plantName, lastOpened }: WaterPanelProps) => {
+const WaterPanel = ({
+  plantName,
+  lastOpened,
+  valveID,
+  onWaterClick,
+}: WaterPanelProps) => {
   var lastOpenedString: string | null = null;
 
   if (lastOpened != null) {
@@ -40,7 +47,7 @@ const WaterPanel = ({ plantName, lastOpened }: WaterPanelProps) => {
 
   return (
     <>
-      <div className="container m-2 border rounded">
+      <div className="container m-2 p-3 border rounded">
         <div className="row fw-bold text-center">
           <div className="col">{plantName}</div>
         </div>
@@ -52,7 +59,14 @@ const WaterPanel = ({ plantName, lastOpened }: WaterPanelProps) => {
         </div>
         <div className="row m-2">
           <div className="col text-center">
-            <button className="btn btn-primary">Water</button>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                onWaterClick(valveID, 20);
+              }}
+            >
+              Water
+            </button>
           </div>
         </div>
       </div>

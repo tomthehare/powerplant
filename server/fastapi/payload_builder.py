@@ -1,4 +1,5 @@
 from logging import Logger
+from re import sub
 
 from database.client import DatabaseClient
 from models.event import Event
@@ -39,9 +40,13 @@ class PayloadBuilder:
                 min_seconds, max_seconds
             )
 
-        return [{"timestamp": a[0], "humidity": a[1]} for a in samples]
+        return [{"timestamp": a[0], "humidity": round(a[1], 1)} for a in samples]
 
     def get_events(self, subject_type: str, last_hours: int = 24) -> list:
+
+        if subject_type == "all":
+            subject_type = ""
+
         ts_start = TimeHelper.timestamp() - (last_hours * 60 * 60)
         ts_end = TimeHelper.timestamp()
         all_events = self.database_client.get_powerplant_events(ts_start, ts_end)

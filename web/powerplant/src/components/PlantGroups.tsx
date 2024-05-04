@@ -5,6 +5,25 @@ import IPlantGroup from "../models/IPlantGroup";
 const PlantGroups = () => {
   const [plantGroups, setPlantGroups] = useState<Array<IPlantGroup>>([]);
   const [loading, setLoading] = useState(true);
+
+  const onWaterClick = (valveID: number, openDuration: number) => {
+    const submittable = {
+      valve_id: valveID,
+      open_duration_seconds: openDuration,
+    };
+
+    console.log("Open duration: " + openDuration);
+    console.log("Submittable" + JSON.stringify(submittable));
+
+    fetch("http://192.168.86.172:8000/watering-queue", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(submittable),
+    });
+  };
+
   useEffect(() => {
     const fetchPlantGroups = async () => {
       try {
@@ -44,6 +63,8 @@ const PlantGroups = () => {
               <WaterPanel
                 plantName={plantGroup.description}
                 lastOpened={plantGroup.lastWatered}
+                valveID={plantGroup.valveID}
+                onWaterClick={onWaterClick}
               />
             </div>
           );

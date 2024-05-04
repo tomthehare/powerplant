@@ -7,6 +7,7 @@ from components.task_coordinator import TaskCoordinator
 from components.tasks.attic_fan_task import AtticFanTask
 from components.tasks.config_sync_task import ConfigSyncTask
 from components.tasks.event_sending_task import EventSendingTask
+from components.tasks.fake_water_queue_task import FakeWaterQueueTask
 from components.tasks.temp_humid_log_task import TempHumidLogTask
 from components.tasks.valve_close_task import ValveCloseTask
 from components.tasks.water_plants_task import WaterPlantsTask
@@ -127,6 +128,7 @@ class NormalOperation:
             "8": valve_8,
         }
 
+        # TODO: Need to get this from config.
         watering_schedule = [
             {"hour": 7, "water_every_days": 1},
         ]
@@ -134,22 +136,14 @@ class NormalOperation:
         pump = Pump(PinConfig.PIN_PUMP_POWER, self.logger)
 
         window_se = Window(
-            get_window_config(WINDOW_SOUTH_EAST),
-            self.logger,
+            get_window_config(WINDOW_SOUTH_EAST), self.logger, event_client
         )
 
-        window_n = Window(
-            get_window_config(WINDOW_NORTH),
-            self.logger,
-        )
+        window_n = Window(get_window_config(WINDOW_NORTH), self.logger, event_client)
         window_sw = Window(
-            get_window_config(WINDOW_SOUTH_WEST),
-            self.logger,
+            get_window_config(WINDOW_SOUTH_WEST), self.logger, event_client
         )
-        window_e = Window(
-            get_window_config(WINDOW_EAST),
-            self.logger,
-        )
+        window_e = Window(get_window_config(WINDOW_EAST), self.logger, event_client)
         windows_group = WindowsGroup(
             [window_se, window_n, window_sw, window_e], self.logger
         )
@@ -180,13 +174,13 @@ class NormalOperation:
             )
         )
         # task_coordinator.register_task(TempHumidLogTask(FIVE_MINUTES, temp_humid_outside, self.server_url + '/weather-samples', web_client, 'outside', self.logger))
+        # task_coordinator.register_task(
+        #     WaterPlantsTask(
+        #         TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
+        #     )
+        # )
         task_coordinator.register_task(
-            WaterPlantsTask(
-                TimeObserver.TEN_MINUTES, web_client, watering_schedule, self.logger
-            )
-        )
-        task_coordinator.register_task(
-            WaterQueueTask(web_client, 30, valve_lock, valve_dict, pump)
+            WaterQueueTask(self.logger, web_client, 30, valve_lock, valve_dict, pump)
         )
         task_coordinator.register_task(
             ValveCloseTask(valve_1, valve_lock, config, pump, self.logger)

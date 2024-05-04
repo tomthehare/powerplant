@@ -89,11 +89,13 @@ const CurrentConditions = () => {
     </>
   ) : (
     <div>
-      Current Temperature: {currentTemp}
-      <p />
-      Min Temperature: {minTemp} ({minTempTs})
-      <p />
-      Max Temperature: {maxTemp} ({maxTempTs})
+      <div className="container">Current Temperature: {currentTemp}</div>
+      <div className="container">
+        Min Temperature: {minTemp} ({minTempTs})
+      </div>
+      <div className="container">
+        Max Temperature: {maxTemp} ({maxTempTs})
+      </div>
     </div>
   );
 };

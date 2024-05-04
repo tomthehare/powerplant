@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import IEvent from "../models/IEvent";
 
-const EventStackTable = () => {
+interface EventStackTableProps {
+  eventType: string;
+}
+
+const EventStackTable = ({ eventType = "all" }: EventStackTableProps) => {
   const [events, setEvents] = useState<Array<IEvent>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const results = await fetch("http://192.168.86.172:8000/events");
+        const results = await fetch(
+          "http://192.168.86.172:8000/events?type=" + eventType
+        );
         const data = await results.json();
 
         const humanData = [];
@@ -24,10 +30,10 @@ const EventStackTable = () => {
           const humanDate = new Date(element.timestamp * 1000);
 
           const year = humanDate.getFullYear();
-          const month = humanDate.getMonth() + 1; // Months are zero-indexed in JavaScript
-          const day = humanDate.getDate();
+          const month = (humanDate.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-indexed in JavaScript
+          const day = humanDate.getDate().toString().padStart(2, "0");
           var hours = humanDate.getHours();
-          const minutes = humanDate.getMinutes();
+          const minutes = humanDate.getMinutes().toString().padStart(2, "0");
 
           var amPm = "AM";
           if (hours > 12) {
@@ -35,8 +41,10 @@ const EventStackTable = () => {
             amPm = "PM";
           }
 
+          const hoursString = hours.toString().padStart(2, "0");
+
           // Format the date as a string
-          const humanDateString = `${year}-${month}-${day} ${hours}:${minutes} ${amPm}`;
+          const humanDateString = `${year}-${month}-${day} ${hoursString}:${minutes} ${amPm}`;
 
           humanData.push({
             message: humanMessage,

@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO
 from components.event_client import EventClient
 from components.time_observer import TimeObserver
 from dtos.valve_config import ValveConfig
+from gpio_controller import GPIOController
 
 
 class Valve:
@@ -34,8 +35,8 @@ class Valve:
             "Setting up %s valve on pin %d", self.get_description(), self.signal_pin
         )
 
-        GPIO.setup(self.signal_pin, GPIO.OUT)
-        GPIO.output(self.signal_pin, GPIO.HIGH)
+        GPIOController.register_pin(self.signal_pin)
+        GPIOController.activate_pin(self.signal_pin)
 
     def get_description(self):
         if not self.valve_config:
@@ -44,7 +45,7 @@ class Valve:
         return self.valve_config.description
 
     def open(self, open_duration_seconds=-1):
-        GPIO.output(self.signal_pin, GPIO.LOW)
+        GPIOController.deactivate_pin(self.signal_pin)
         self.is_open = True
         self.last_opened_time = self.time_observer.timestamp()
         if int(open_duration_seconds) > 0:
@@ -58,7 +59,7 @@ class Valve:
     def close(self):
         self.logger.debug("Sleeping 1 second")
         time.sleep(self.VALVE_CLEAR_SLEEP_SECONDS)
-        GPIO.output(self.signal_pin, GPIO.HIGH)
+        GPIOController.activate_pin(self.signal_pin)
         self.is_open = False
         self.override_open_duration_seconds = -1
         self.event_client.log_valve_event(self.id, False)

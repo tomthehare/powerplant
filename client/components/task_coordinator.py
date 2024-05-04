@@ -11,12 +11,14 @@ logging.basicConfig(
 
 class TaskCoordinator:
 
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
         self.tasks = []
         self.enabled = True
+        self.logger = logger
 
     def register_task(self, task):
         self.tasks.append(task)
+        self.logger.info("Registered %s" % str(task))
 
     def run(self):
         while True:
