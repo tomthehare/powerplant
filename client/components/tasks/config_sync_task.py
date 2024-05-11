@@ -39,4 +39,7 @@ class ConfigSyncTask:
         self.logger.debug("Got new fan config: " + json.dumps(new_fan_config, indent=2))
         self.config.update_fan_temp_config(new_fan_config)
 
+        # TODO Kind of weird how this is set up - we're just reading the config...  Should flatten the calls
+        self.config.update_water_config(new_fan_config["water_config"])
+
         self.last_run_ts = self.time_observer.timestamp()

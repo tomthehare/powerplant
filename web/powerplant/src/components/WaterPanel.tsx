@@ -14,7 +14,9 @@ const WaterPanel = ({
   var lastOpenedString: string | null = null;
 
   if (lastOpened != null) {
-    var seconds: number = +lastOpened;
+    const deltaSeconds = Math.floor(Date.now() / 1000) - +lastOpened;
+
+    var seconds: number = deltaSeconds;
 
     // Need to format the last opened timestamp to be how we want it.
     const days = Math.floor(seconds / 86400);
@@ -26,20 +28,24 @@ const WaterPanel = ({
 
     var delta_pieces: string[] = [];
 
-    if (days > 0) {
-      delta_pieces.push(`${days} days`);
-    }
+    if (days == 0 && hours > 12) {
+      delta_pieces.push("Yesterday");
+    } else {
+      if (days > 0) {
+        delta_pieces.push(`${days} days`);
+      }
 
-    if (hours > 0) {
-      delta_pieces.push(`${hours} hours`);
-    }
+      if (hours > 0) {
+        delta_pieces.push(`${hours} hours`);
+      }
 
-    if (minutes > 0) {
-      delta_pieces.push(`${minutes} minutes`);
-    }
+      if (minutes > 0) {
+        delta_pieces.push(`${minutes} minutes`);
+      }
 
-    if (seconds > 0) {
-      delta_pieces.push(`${seconds} seconds`);
+      if (seconds > 0) {
+        delta_pieces.push(`${seconds} seconds`);
+      }
     }
 
     lastOpenedString = delta_pieces.join(" ");
@@ -49,7 +55,9 @@ const WaterPanel = ({
     <>
       <div className="container m-2 p-3 border rounded">
         <div className="row fw-bold text-center">
-          <div className="col">{plantName}</div>
+          <div className="col">
+            {plantName} - Valve {valveID}
+          </div>
         </div>
         <div className="row text-center">
           <div className="col">

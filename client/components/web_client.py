@@ -42,6 +42,13 @@ class WebClient:
 
         return response.json()
 
+    def queue_valve_for_water(self, valve_id):
+        url = self.server_url + "/watering-queue"
+
+        r = requests.put(url, json={"valve_id": valve_id, "open_duration_seconds": 30})
+
+        return r.status_code == 200
+
     def read_watering_queue(self):
         url = self.server_url + "/watering-queue"
 
@@ -58,13 +65,6 @@ class WebClient:
             return False
 
         return True
-
-    def water_all(self):
-        url = self.server_url + "/valves/water"
-
-        response = requests.post(url)
-
-        return response.status_code == 200
 
     def dequeue_valve(self):
         url = self.server_url + "/watering-queue"

@@ -2,6 +2,7 @@ import json
 from logging import Logger
 import os
 
+from components.config import Config
 from components.time_observer import TimeObserver
 from components.web_client import WebClient
 
@@ -20,7 +21,7 @@ class WaterPlantsTask:
         self,
         run_every_seconds: int,
         web_client: WebClient,
-        schedule_conditions_list,
+        config: Config,
         logger: Logger,
         time_observer: TimeObserver = None,
     ):
@@ -29,7 +30,7 @@ class WaterPlantsTask:
         self.last_watered_hour = 0
         self.last_watered_day = 0
         self.web_client = web_client
-        self.schedule_conditions_list = schedule_conditions_list
+        self.config = config
         self.logger = logger
         self.time_observer = time_observer or TimeObserver()
 
@@ -64,36 +65,38 @@ class WaterPlantsTask:
 
         self.last_evaluated_timestamp = self.time_observer.timestamp()
 
-        for sc in self.schedule_conditions_list:
-            hour = int(sc["hour"])
-            water_every_days = int(sc["water_every_days"])
+        hours = self.config.water_at_hours
+        water_every_days = self.config.water_every_days
 
-            comparison = {
-                "current_day": self.time_observer.current_day(),
-                "current_hour": self.time_observer.current_hour(),
-                "last_watered_hour": self.last_watered_hour,
-                "last_watered_day": self.last_watered_day,
-            }
+        comparison = {
+            "current_day": self.time_observer.current_day(),
+            "current_hour": self.time_observer.current_hour(),
+            "last_watered_hour": self.last_watered_hour,
+            "last_watered_day": self.last_watered_day,
+            "config_hours": hours,
+            "config_water_every_days": water_every_days,
+        }
 
-            self.logger.debug(
-                "comparing %s and %s"
-                % (json.dumps(comparison, indent=2), json.dumps(sc, indent=2))
-            )
+        self.logger.debug(comparison)
 
-            if (
-                self.time_observer.current_hour() == hour
-                and self.time_observer.current_day()
-                >= (self.last_watered_day + water_every_days)
-            ):
-                self.last_watered_day = self.time_observer.current_day()
-                self.last_watered_hour = self.time_observer.current_hour()
+        if (
+            self.time_observer.current_hour() in hours
+            and self.time_observer.current_day()
+            >= (self.last_watered_day + water_every_days)
+        ):
+            self.last_watered_day = self.time_observer.current_day()
+            self.last_watered_hour = self.time_observer.current_hour()
 
-                # Persist last watered hour and day in order to ensure we don't double water if something goes wrong.
-                self.persist_data(self.last_watered_hour, self.last_watered_day)
+            # Persist last watered hour and day in order to ensure we don't double water if something goes wrong.
+            self.persist_data(self.last_watered_hour, self.last_watered_day)
 
-                self.web_client.water_all()
-                self.logger.info(
-                    "Queued all plants to be watered.  %s" % json.dumps(sc, indent=2)
-                )
+            # TODO should replace this with active check boxes on teh config screen
+            self.web_client.queue_valve_for_water(1)
+            self.web_client.queue_valve_for_water(2)
+            self.web_client.queue_valve_for_water(4)
+            self.web_client.queue_valve_for_water(6)
+            self.web_client.queue_valve_for_water(8)
+
+            self.logger.info("Queued all plants to be watered.")
 
         return True

@@ -9,6 +9,7 @@ from components.time_observer import TimeObserver
 from components.windows_group import WindowsGroup
 from gpio_controller import GPIOController
 
+FOUR_PM = 16
 
 class AtticFanTask:
     def __init__(
@@ -60,7 +61,7 @@ class AtticFanTask:
         if (
             self.windows.eligible_for_open()
             and temp_f_now > (self.config.fan_temp - 5)
-            and self.time_observer.current_hour() < 16
+            and self.time_observer.current_hour() < FOUR_PM
         ):
             self.windows.open()
 
@@ -70,14 +71,14 @@ class AtticFanTask:
             # If it's likely the last fan of the day, close the windows to try to keep heat in.
             if (
                 self.windows.eligible_for_close()
-                and self.time_observer.current_hour() >= 16
+                and self.time_observer.current_hour() >= FOUR_PM
             ):
                 self.windows.close()
 
         elif (
             not self.is_on
             and temp_f_now > self.config.fan_temp
-            and self.time_observer.current_hour() < 16
+            and self.time_observer.current_hour() < FOUR_PM
         ):
             self.turn_on()
 
@@ -87,7 +88,7 @@ class AtticFanTask:
             and not self.is_on
             and (
                 temp_f_now < (self.config.fan_temp - 5)
-                or self.time_observer.current_hour() >= 16
+                or self.time_observer.current_hour() >= FOUR_PM
             )
         ):
             self.windows.close()

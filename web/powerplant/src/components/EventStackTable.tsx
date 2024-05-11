@@ -11,6 +11,7 @@ const EventStackTable = ({ eventType = "all" }: EventStackTableProps) => {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      console.log("http://192.168.86.172:8000/events?type=" + eventType);
       try {
         const results = await fetch(
           "http://192.168.86.172:8000/events?type=" + eventType
@@ -61,7 +62,9 @@ const EventStackTable = ({ eventType = "all" }: EventStackTableProps) => {
     };
 
     fetchEvents();
-  }, []);
+  }, [eventType]);
+
+  console.log("yeah: " + eventType);
 
   return loading ? (
     <div className="container">

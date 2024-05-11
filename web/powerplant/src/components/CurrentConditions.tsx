@@ -71,8 +71,18 @@ const CurrentConditions = () => {
         setCurrentTemp(currentTemp);
         setMaxTemp(maxTemp);
         setMinTemp(minTemp);
-        setMaxTempTs(`${maxHours}:${humanMaxTempTime.getMinutes()} ${maxAmPm}`);
-        setMinTempTs(`${minHours}:${humanMinTempTime.getMinutes()} ${minAmPm}`);
+        setMaxTempTs(
+          `${maxHours}:${humanMaxTempTime
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")} ${maxAmPm}`
+        );
+        setMinTempTs(
+          `${minHours}:${humanMinTempTime
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")} ${minAmPm}`
+        );
       } catch (error) {
         console.log("ERROR: ", error);
       } finally {
