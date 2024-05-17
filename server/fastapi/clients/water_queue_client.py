@@ -36,7 +36,7 @@ class WaterQueueClient:
         queue = self.get_queue()
 
         if len(queue) > 0:
-            queue.pop()
+            queue.pop(0)
             self._save_queue(queue)
 
     def ensure_water_queue_exists(self):
