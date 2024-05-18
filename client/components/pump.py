@@ -36,3 +36,9 @@ class Pump:
         GPIOController.activate_pin(self.power_pin)
         self.pump_on = False
         self.logger.info("Turned off pump")
+
+    def is_pump_on(self) -> bool:
+        return self.pump_on
+
+    def is_pump_off(self) -> bool:
+        return not self.is_pump_on()

@@ -1,5 +1,6 @@
 from logging import Logger
 
+from components.tasks.pump_modulation_task import PumpModulationTask
 from components.config import Config
 from components.event_client import EventClient
 from components.pump import Pump
@@ -177,32 +178,37 @@ class NormalOperation:
         task_coordinator.register_task(
             WaterPlantsTask(TimeObserver.TEN_MINUTES, web_client, config, self.logger)
         )
+
+        on_behalf_of_pump = PumpModulationTask(pump, half_cycle_time_seconds=1)
+        task_coordinator.register_task(on_behalf_of_pump)
+
         task_coordinator.register_task(
-            WaterQueueTask(self.logger, web_client, 30, valve_lock, valve_dict, pump)
+            WaterQueueTask(self.logger, web_client, 30, valve_lock, valve_dict, on_behalf_of_pump)
+        )
+
+        task_coordinator.register_task(
+            ValveCloseTask(valve_1, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_1, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_2, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_2, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_3, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_3, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_4, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_4, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_5, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_5, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_6, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_6, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_7, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_7, valve_lock, config, pump, self.logger)
-        )
-        task_coordinator.register_task(
-            ValveCloseTask(valve_8, valve_lock, config, pump, self.logger)
+            ValveCloseTask(valve_8, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
             EventSendingTask(

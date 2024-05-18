@@ -94,7 +94,9 @@ class WaterPlantsTask:
             self.web_client.queue_valve_for_water(1)
             self.web_client.queue_valve_for_water(2)
             self.web_client.queue_valve_for_water(4)
+            self.web_client.queue_valve_for_water(5)
             self.web_client.queue_valve_for_water(6)
+            self.web_client.queue_valve_for_water(7)
             self.web_client.queue_valve_for_water(8)
 
             self.logger.info("Queued all plants to be watered.")

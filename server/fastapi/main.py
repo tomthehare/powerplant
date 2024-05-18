@@ -16,21 +16,6 @@ db_client = bootstrapper.db_client
 logger = bootstrapper.logger
 app = bootstrapper.app
 
-"""
-What are our entities?
-
-WeatherSample
-Config
-    -> Fan Temp
-    -> Watering Schedule
-    -> Valves
-WateringQueue
-    -> PUT (push), DELETE (dequeue)
-Valves
-Events
-
-"""
-
 
 @app.get("/")
 def read_root():
@@ -97,6 +82,11 @@ def get_config():
 
 @app.patch("/config")
 def patch_config(config: Config):
+
+    for plant_group in config.plant_groups:
+        plant_group["valve_id"] = int(plant_group["valve_id"])
+        plant_group["open_duration_seconds"] = int(plant_group["open_duration_seconds"])
+
     ConfigClient(logger).set_config(config)
 
 
