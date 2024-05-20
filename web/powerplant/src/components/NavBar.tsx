@@ -14,6 +14,7 @@ const NavBar = ({
   return (
     <>
       <nav className="navbar navbar-expand-md navbar-dark mt-2 mb-0">
+      <img className="pr-3" src="../public/powerplant-dark.png" width="50" />
         <span className="navbar-brand fw-bold fs-2">{title}</span>
         {/* I cant get this float to work right. */}
         <div className="float-right">

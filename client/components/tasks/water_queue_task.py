@@ -1,5 +1,6 @@
 from logging import Logger
-from components.pump import Pump
+from components.config import Config
+from components.tasks.pump_modulation_task import PumpModulationTask
 from components.time_observer import TimeObserver
 from components.valve_lock import ValveLock
 from components.web_client import WebClient
@@ -13,7 +14,8 @@ class WaterQueueTask:
         run_every_seconds: int,
         valve_lock: ValveLock,
         valve_dict: dict,
-        pump: Pump,
+        pump: PumpModulationTask,
+        config: Config,
         time_observer: TimeObserver = None,
     ):
         self.logger = logger
@@ -23,6 +25,7 @@ class WaterQueueTask:
         self.valve_lock = valve_lock
         self.valve_dict = valve_dict
         self.pump = pump
+        self.config = config
         self.time_observer = time_observer or TimeObserver()
 
     def should_run(self):
@@ -49,11 +52,12 @@ class WaterQueueTask:
             self.last_run_ts = self.time_observer.timestamp()
 
         next_valve_id = watering_queue[0]["valve_id"]
-        open_duration_seconds = watering_queue[0]["open_duration_seconds"]
+        valve_config = self.config.get_valve_config(next_valve_id)
+        open_duration_seconds = valve_config.open_duration_seconds
         if self.valve_lock.acquire_lock(next_valve_id):
 
             if not self.web_client.dequeue_valve():
                 return
 
             self.valve_dict[str(next_valve_id)].open(open_duration_seconds)
-            self.pump.turn_on()
+            self.pump.turn_on(valve_config.pump_modulation_half_cycle_seconds)

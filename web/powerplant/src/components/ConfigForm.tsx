@@ -45,6 +45,7 @@ const ConfigForm = () => {
             description: element["description"],
             lastWatered: element["last_watered"],
             openDurationSeconds: element["open_duration_seconds"],
+            pumpModulationHalfCycleSeconds: element["pump_modulation_half_cycle_seconds"]
           });
         }
 
@@ -76,13 +77,13 @@ const ConfigForm = () => {
    */
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
-
       const plantGroups = [];
       for (let index = 0; index < data.plantGroups.length; index++) {
         plantGroups.push({
           valve_id: data.plantGroups[index].valveID,
           description: data.plantGroups[index].description,
           open_duration_seconds: data.plantGroups[index].openDurationSeconds,
+          pump_modulation_half_cycle_seconds: data.plantGroups[index].pumpModulationHalfCycleSeconds
         });
       }
 
@@ -93,7 +94,7 @@ const ConfigForm = () => {
           water_every_days: data.waterEveryDays,
         },
         // plant_groups: configStore?.plantGroups,
-        plant_groups: plantGroups
+        plant_groups: plantGroups,
       };
 
       await fetch("http://192.168.86.172:8000/config", {
@@ -116,7 +117,7 @@ const ConfigForm = () => {
   ) : (
     <>
       {console.log(configStore)}
-      <div className="container">
+      <div className="container configContainer">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="row">
             <div className="col">
@@ -166,9 +167,13 @@ const ConfigForm = () => {
           </div>
           <div className="row">
             <div className="col">
+              {/*
 
-              {/* START OF VALVES!!!! */}
 
+            START OF VALVES!!!!
+
+
+            */}
             </div>
           </div>
           <div className="row">
@@ -176,270 +181,543 @@ const ConfigForm = () => {
               <h3>Valves</h3>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
               <h4>Valve 1</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.0.valveID")}
-                value={configStore?.plantGroups[0].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.0.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[0].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.0.openDurationSeconds")}
-                type="number"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[0].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.0.valveID")}
+                    value={configStore?.plantGroups[0].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.0.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[0].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.0.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[0].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.0.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[0]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 2</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.1.valveID")}
-                value={configStore?.plantGroups[1].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.1.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[1].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.1.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[1].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.1.valveID")}
+                    value={configStore?.plantGroups[1].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.1.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[1].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.1.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[0].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.1.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[1]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 3</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.2.valveID")}
-                value={configStore?.plantGroups[2].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.2.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[2].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.2.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[2].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.2.valveID")}
+                    value={configStore?.plantGroups[2].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.2.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[2].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.2.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[2].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.2.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[2]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 4</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.3.valveID")}
-                value={configStore?.plantGroups[3].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.3.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[3].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.3.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[3].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.3.valveID")}
+                    value={configStore?.plantGroups[3].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.3.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[3].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.3.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[3].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.3.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[3]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 5</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.4.valveID")}
-                value={configStore?.plantGroups[4].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.4.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[4].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.4.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[4].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.4.valveID")}
+                    value={configStore?.plantGroups[4].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.4.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[4].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.4.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[4].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.4.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[4]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 6</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.5.valveID")}
-                value={configStore?.plantGroups[5].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.5.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[5].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.5.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[5].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.5.valveID")}
+                    value={configStore?.plantGroups[5].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.5.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[5].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.5.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[5].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.5.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[5]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 7</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.6.valveID")}
-                value={configStore?.plantGroups[6].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.6.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[6].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.6.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[6].openDurationSeconds)
-                    : ""
-                }
-              />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.6.valveID")}
+                    value={configStore?.plantGroups[6].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.6.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[6].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.6.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[6].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.6.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[6]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row">
             <div className="col">
-              <br />
-
               <h4>Valve 8</h4>
-              <input
-                type="hidden"
-                {...register("plantGroups.7.valveID")}
-                value={configStore?.plantGroups[7].valveID}
-              />
-              <span>Name: </span>
-              <input
-                {...register("plantGroups.7.description")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[7].description)
-                    : ""
-                }
-              />
-              <br />
-              <span>Open duration seconds: </span>
-              <input
-                {...register("plantGroups.7.openDurationSeconds")}
-                type="string"
-                defaultValue={
-                  configStore != null
-                    ? String(configStore?.plantGroups[7].openDurationSeconds)
-                    : ""
-                }
-              />
-
-              <br />
+              <div className="row">
+                <div className="col">
+                  <input
+                    type="hidden"
+                    {...register("plantGroups.7.valveID")}
+                    value={configStore?.plantGroups[7].valveID}
+                  />
+                  <span>Name: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.7.description")}
+                    type="string"
+                    data-1p-ignore
+                    defaultValue={
+                      configStore != null
+                        ? String(configStore?.plantGroups[7].description)
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Open duration seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register("plantGroups.7.openDurationSeconds")}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[7].openDurationSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">
+                  <span>Pump modulation half-cycle seconds: </span>
+                </div>
+                <div className="col">
+                  <input
+                    {...register(
+                      "plantGroups.7.pumpModulationHalfCycleSeconds"
+                    )}
+                    type="number"
+                    defaultValue={
+                      configStore != null
+                        ? String(
+                            configStore?.plantGroups[7]
+                              .pumpModulationHalfCycleSeconds
+                          )
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="row mt-4">
             <div className="col">
               <button

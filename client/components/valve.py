@@ -30,6 +30,7 @@ class Valve:
         self.logger = logger
         self.event_client = event_client
         self.time_observer = time_observer or TimeObserver()
+        self.pump_modulation_half_cycle_seconds = 2 # could be overridden by config
 
         self.logger.info(
             "Setting up %s valve on pin %d", self.get_description(), self.signal_pin

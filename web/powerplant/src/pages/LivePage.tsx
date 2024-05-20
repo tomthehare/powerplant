@@ -4,21 +4,9 @@ import PowerplantLineGraph from "../components/PowerplantLineGraph";
 import PlantGroups from "../components/PlantGroups";
 import CurrentConditions from "../components/CurrentConditions";
 import EventPanel from "../components/EventPanel";
+import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 
-// const fanActivity = [
-//   {
-//     name: "15:00",
-//     Minutes: 24,
-//   },
-//   {
-//     name: "16:00",
-//     Minutes: 55,
-//   },
-//   {
-//     name: "17:00",
-//     Minutes: 43,
-//   },
-// ];
+
 
 const LivePage = () => {
   return (
@@ -28,6 +16,7 @@ const LivePage = () => {
         <div className="container">
           <CurrentConditions />
         </div>
+        <BrowserView>
         <div className="container mt-4">
           <div className="row">
             <div className="col">
@@ -54,6 +43,7 @@ const LivePage = () => {
           </div>
         </div> */}
         </div>
+        </BrowserView>
       </div>
 
       <div className="text-center container mt-5 p-1 border border-2 border-secondary rounded">

@@ -146,7 +146,7 @@ class NormalOperation:
         )
         window_e = Window(get_window_config(WINDOW_EAST), self.logger, event_client)
         windows_group = WindowsGroup(
-            [window_se, window_n, window_sw, window_e], self.logger
+            [window_se, window_n, window_sw, window_e], self.logger, event_client
         )
 
         # Make sure the windows are closed before doing anything else on start up.
@@ -179,11 +179,11 @@ class NormalOperation:
             WaterPlantsTask(TimeObserver.TEN_MINUTES, web_client, config, self.logger)
         )
 
-        on_behalf_of_pump = PumpModulationTask(pump, half_cycle_time_seconds=1)
+        on_behalf_of_pump = PumpModulationTask(pump, half_cycle_time_seconds_default=1)
         task_coordinator.register_task(on_behalf_of_pump)
 
         task_coordinator.register_task(
-            WaterQueueTask(self.logger, web_client, 30, valve_lock, valve_dict, on_behalf_of_pump)
+            WaterQueueTask(self.logger, web_client, 30, valve_lock, valve_dict, on_behalf_of_pump, config)
         )
 
         task_coordinator.register_task(

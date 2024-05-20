@@ -1,10 +1,13 @@
 from logging import Logger
 
+from components.event_client import EventClient
+
 
 class WindowsGroup:
-    def __init__(self, windows_list: list, logger: Logger):
+    def __init__(self, windows_list: list, logger: Logger, event_client: EventClient):
         self.windows = windows_list
         self.windows_are_open = None
+        self.event_client = event_client
 
     def eligible_for_open(self):
         if self.windows_are_open is None or self.windows_are_open == False:
@@ -26,6 +29,7 @@ class WindowsGroup:
             window.open()
 
         self.windows_are_open = True
+        self.event_client.log_window_opened_event('all')
 
     def close(self):
         if not self.eligible_for_close():
@@ -36,3 +40,4 @@ class WindowsGroup:
             window.close()
 
         self.windows_are_open = False
+        self.event_client.log_window_closed_event('all')

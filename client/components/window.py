@@ -56,7 +56,6 @@ class Window:
 
         GPIOController.deactivate_pin(self.input_a)
         self.is_open = True
-        self.event_client.log_window_opened_event(self.descriptor)
 
     def close(self):
         if not self.eligible_for_close():
@@ -71,4 +70,3 @@ class Window:
 
         GPIOController.deactivate_pin(self.input_b)
         self.is_open = False
-        self.event_client.log_window_closed_event(self.descriptor)

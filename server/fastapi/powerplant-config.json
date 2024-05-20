@@ -2,50 +2,58 @@
   "fan_temperature": 85,
   "water_config": {
     "hours": [
-      8
+      "8"
     ],
-    "water_every_days": 1
+    "water_every_days": 2
   },
   "plant_groups": [
     {
       "valve_id": 1,
       "description": "Tomatoes[SouthEast]",
-      "open_duration_seconds": 40
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 2,
-      "description": "FarWall[Previously Basil]",
-      "open_duration_seconds": 40
+      "description": "Far Wall Jalepenos",
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 3,
-      "description": "Raised Bed",
-      "open_duration_seconds": 40
+      "description": "The Raised Bed",
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 0
     },
     {
       "valve_id": 4,
       "description": "Tomatoes[West]",
-      "open_duration_seconds": 40
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 5,
-      "description": "East Wall Middle [Previously Strawberries]",
-      "open_duration_seconds": 40
+      "description": "Peas & Shishitos",
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 6,
-      "description": "Jalepeno Limes",
-      "open_duration_seconds": 40
+      "description": "Jalepeno + Limes",
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 7,
-      "description": "North East Bubblers",
-      "open_duration_seconds": 40
+      "description": "Pea Department",
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     },
     {
       "valve_id": 8,
       "description": "Tomatoes[NorthEast]",
-      "open_duration_seconds": 40
+      "open_duration_seconds": 40,
+      "pump_modulation_half_cycle_seconds": 2
     }
   ]
 }

@@ -86,6 +86,7 @@ def patch_config(config: Config):
     for plant_group in config.plant_groups:
         plant_group["valve_id"] = int(plant_group["valve_id"])
         plant_group["open_duration_seconds"] = int(plant_group["open_duration_seconds"])
+        plant_group["pump_modulation_half_cycle_seconds"] = int(plant_group["pump_modulation_half_cycle_seconds"])
 
     ConfigClient(logger).set_config(config)
 
