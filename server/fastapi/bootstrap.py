@@ -34,7 +34,7 @@ class Bootstrap:
         WaterQueueClient().ensure_water_queue_exists()
 
     def define_cross_origin_resource_sharing_policy(self):
-        allowed_origins = ["http://localhost:5173", "http://192.168.86.172:5173"]
+        allowed_origins = ["http://localhost:5173", "http://192.168.86.172:5173", "http://71.184.132.189/:1"]
 
         self.app.add_middleware(
             CORSMiddleware,

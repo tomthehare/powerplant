@@ -82,6 +82,7 @@ class WebClient:
 
         try:
             response = requests.get(url)
+            self.logger.debug("pinged server, got response: %s" % response.json())
         except Exception as e:
             return False
 

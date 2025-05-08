@@ -1,3 +1,4 @@
+import json
 from logging import Logger
 from components.config import Config
 from components.tasks.pump_modulation_task import PumpModulationTask
@@ -53,6 +54,8 @@ class WaterQueueTask:
 
         next_valve_id = watering_queue[0]["valve_id"]
         valve_config = self.config.get_valve_config(next_valve_id)
+
+        self.logger.info("Using config for valve: %s" % valve_config)
         open_duration_seconds = valve_config.open_duration_seconds
         if self.valve_lock.acquire_lock(next_valve_id):
 

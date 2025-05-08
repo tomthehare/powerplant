@@ -36,7 +36,11 @@ class PumpModulationTask(Pump):
         self._last_half_cycle_timestamp = self.time_observer.timestamp()
 
     def _get_half_cycle_time_seconds(self):
-        return self.half_cycle_time_seconds_override or self.half_cycle_time_seconds
+        return (
+            self.half_cycle_time_seconds_override
+            if self.half_cycle_time_seconds_override is not None
+            else self.half_cycle_time_seconds
+        )
 
     def run(self):
         if not self.pump_should_be_on or self._get_half_cycle_time_seconds() <= 0:
