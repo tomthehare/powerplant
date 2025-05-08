@@ -39,10 +39,17 @@ GPIO.setmode(GPIO.BCM)
 
 logger.info("Finding server address...")
 active_server_url = ""
-for url in SERVER_URLS:
-    if WebClient(url, logger).ping_server():
-        logging.info("Found an active server at %s" % url)
-        active_server_url = url
+iterations = 0
+max_iterations = 5
+while active_server_url == "" and iterations < max_iterations:
+    iterations = iterations + 1
+    for url in SERVER_URLS:
+        logger.info("checking for server: %s" % url)
+        if WebClient(url, logger).ping_server():
+            logging.info("Found an active server at %s" % url)
+            active_server_url = url
+            break
+    time.sleep(5)
 
 if not active_server_url:
     raise Exception("No server url found!")
