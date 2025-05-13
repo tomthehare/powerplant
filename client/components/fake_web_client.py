@@ -38,4 +38,5 @@ class FakeWebClient(WebClient):
         return True
 
     def dequeue_valve(self):
+        self.queue.pop(0)
         return True

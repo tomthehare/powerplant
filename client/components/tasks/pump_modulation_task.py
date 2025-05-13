@@ -1,7 +1,6 @@
 from components.pump import Pump
 from components.time_observer import TimeObserver
 
-
 class PumpModulationTask(Pump):
 
     def __init__(
@@ -60,3 +59,17 @@ class PumpModulationTask(Pump):
             > self._get_half_cycle_time_seconds()
         ):
             self._internal_turn_on()
+
+
+class NoOpPumpModulationTask(PumpModulationTask):
+    def __init__(self):
+        pass
+
+    def run(self):
+        pass
+
+    def turn_on(self, pump_cycle_time_seconds_override: int = None):
+        pass
+
+    def turn_off(self):
+        pass

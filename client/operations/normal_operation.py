@@ -1,14 +1,13 @@
 from logging import Logger
 
-from components.tasks.pump_modulation_task import PumpModulationTask
+from components.tasks.circulator_fans_task import CirculatorFansTask
+from components.tasks.pump_modulation_task import NoOpPumpModulationTask
 from components.config import Config
 from components.event_client import EventClient
-from components.pump import Pump
 from components.task_coordinator import TaskCoordinator
 from components.tasks.attic_fan_task import AtticFanTask
 from components.tasks.config_sync_task import ConfigSyncTask
 from components.tasks.event_sending_task import EventSendingTask
-from components.tasks.fake_water_queue_task import FakeWaterQueueTask
 from components.tasks.temp_humid_log_task import TempHumidLogTask
 from components.tasks.valve_close_task import ValveCloseTask
 from components.tasks.water_plants_task import WaterPlantsTask
@@ -82,59 +81,12 @@ class NormalOperation:
             self.logger,
             event_client,
         )
-        valve_4 = Valve(
-            4,
-            PinConfig.PIN_VALVE_4_POWER,
-            config.get_valve_config(4),
-            self.logger,
-            event_client,
-        )
-        valve_5 = Valve(
-            5,
-            PinConfig.PIN_VALVE_5_POWER,
-            config.get_valve_config(5),
-            self.logger,
-            event_client,
-        )
-        valve_6 = Valve(
-            6,
-            PinConfig.PIN_VALVE_6_POWER,
-            config.get_valve_config(6),
-            self.logger,
-            event_client,
-        )
-        valve_7 = Valve(
-            7,
-            PinConfig.PIN_VALVE_7_POWER,
-            config.get_valve_config(7),
-            self.logger,
-            event_client,
-        )
-        valve_8 = Valve(
-            8,
-            PinConfig.PIN_VALVE_8_POWER,
-            config.get_valve_config(8),
-            self.logger,
-            event_client,
-        )
 
         valve_dict = {
             "1": valve_1,
             "2": valve_2,
             "3": valve_3,
-            "4": valve_4,
-            "5": valve_5,
-            "6": valve_6,
-            "7": valve_7,
-            "8": valve_8,
         }
-
-        # TODO: Need to get this from config.
-        watering_schedule = [
-            {"hour": 7, "water_every_days": 1},
-        ]
-
-        pump = Pump(PinConfig.PIN_PUMP_POWER, self.logger)
 
         window_se = Window(
             get_window_config(WINDOW_SOUTH_EAST), self.logger, event_client
@@ -179,7 +131,7 @@ class NormalOperation:
             WaterPlantsTask(TimeObserver.TEN_MINUTES, web_client, config, self.logger)
         )
 
-        on_behalf_of_pump = PumpModulationTask(pump, half_cycle_time_seconds_default=1)
+        on_behalf_of_pump = NoOpPumpModulationTask()
         task_coordinator.register_task(on_behalf_of_pump)
 
         task_coordinator.register_task(
@@ -196,27 +148,12 @@ class NormalOperation:
             ValveCloseTask(valve_3, valve_lock, config, on_behalf_of_pump, self.logger)
         )
         task_coordinator.register_task(
-            ValveCloseTask(valve_4, valve_lock, config, on_behalf_of_pump, self.logger)
-        )
-        task_coordinator.register_task(
-            ValveCloseTask(valve_5, valve_lock, config, on_behalf_of_pump, self.logger)
-        )
-        task_coordinator.register_task(
-            ValveCloseTask(valve_6, valve_lock, config, on_behalf_of_pump, self.logger)
-        )
-        task_coordinator.register_task(
-            ValveCloseTask(valve_7, valve_lock, config, on_behalf_of_pump, self.logger)
-        )
-        task_coordinator.register_task(
-            ValveCloseTask(valve_8, valve_lock, config, on_behalf_of_pump, self.logger)
-        )
-        task_coordinator.register_task(
             EventSendingTask(
                 5, web_client, event_client, self.logger, 5, time_observer=time_observer
             )
         )
 
         ## Check every 30 seconds to run the circ fans  for 90 seconds every 10 minutes:
-        # task_coordinator.register_task(CirculatorFansTask(30, PIN_CIRC_FAN_POWER, TEN_MINUTES, 90))
+        # task_coordinator.register_task(CirculatorFansTask(30, PinConfig.PIN_CIRC_FAN_POWER, TimeObserver.TEN_MINUTES, 90))
 
         task_coordinator.run()

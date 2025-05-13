@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import logging
 import signal
 import sys
+import time
 import coloredlogs
 from components.task_coordinator import TaskCoordinator
 from components.web_client import WebClient
@@ -54,7 +55,9 @@ while active_server_url == "" and iterations < max_iterations:
 if not active_server_url:
     raise Exception("No server url found!")
 
-operation = NormalOperation(active_server_url, logger)
+# operation = NormalOperation(active_server_url, logger)
+operation = ValveTestOperation(active_server_url, logger)
+
 operation.run_operation(task_coordinator)
 
 # operation = WindowTestOperation(active_server_url, logger)

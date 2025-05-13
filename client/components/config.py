@@ -30,10 +30,6 @@ class Config:
                 "open_duration_seconds"
             ]
 
-            self.valves[valve_id].pump_modulation_half_cycle_seconds = valve_config[
-                "pump_modulation_half_cycle_seconds"
-            ]
-
     def get_valve_config(self, valve_id):
         if valve_id not in self.valves.keys():
             return ValveConfig(valve_id)

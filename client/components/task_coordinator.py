@@ -11,17 +11,20 @@ logging.basicConfig(
 
 class TaskCoordinator:
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger, run_iterations: int = 0):
         self.tasks = []
         self.enabled = True
         self.logger = logger
+        self.run_iterations = run_iterations
 
     def register_task(self, task):
         self.tasks.append(task)
         self.logger.info("Registered %s" % str(task))
 
     def run(self):
-        while True:
+        iteration = 0
+
+        while iteration < self.run_iterations or self.run_iterations == 0:
             for task in self.tasks:
                 try:
                     if self.enabled:
@@ -34,6 +37,7 @@ class TaskCoordinator:
                     traceback.print_exc()
 
             time.sleep(0.5)
+            iteration += 1
 
     def shutdown(self):
         self.enabled = False
